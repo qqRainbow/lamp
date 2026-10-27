@@ -417,6 +417,14 @@ nav.tabs button {
 nav.tabs button svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 nav.tabs button[aria-selected="true"] { color: var(--gold); }
 
+/* "Leave this round?" prompt */
+.confirm { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 25, .45); }
+.confirm .in {
+  width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 10px;
+  background: var(--surface); color: var(--ink); border-radius: 20px; padding: 22px 20px 18px; box-shadow: 0 18px 50px rgba(0, 0, 0, .25);
+}
+.confirm p { margin: 0; }
+.confirm .bar { margin-top: 8px; justify-content: flex-end; }
 .toast {
   position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
   background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: .85rem; font-weight: 600; z-index: 6;
@@ -595,6 +603,11 @@ nav.tabs button[aria-selected="true"] { color: var(--gold); }
   </form>
 </div></div>
 <div class="toast" id="toast" hidden></div>
+<div class="confirm" id="leave" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-text" hidden><div class="in">
+  <h2 id="leave-title" data-t="leave_title"></h2>
+  <p class="muted" id="leave-text"></p>
+  <div class="bar"><button class="btn" type="button" id="leave-go" data-t="leave_go"></button><button class="btn primary" type="button" id="leave-stay" data-t="leave_stay"></button></div>
+</div></div>
 
 <script>
 // ---------- Data ----------
@@ -1288,6 +1301,8 @@ const T = {
     daily_title: "Question of the day", daily_done: "Come back tomorrow for a new question.",
     daily_streak: n => n ? `${n} ${n === 1 ? "day" : "days"} in a row` : "Answer to start a streak",
     tile_quiz_daily: "Today's question is waiting",
+    leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
+    leave_text: (i, n) => `You're on question ${i} of ${n}. If you leave, this round ends and won't count toward your best score.`,
     games_title: "Games", game_book: "Which book is it from?", game_book_short: "Which book?",
     game_book_desc_e: "Famous verses, with a hint", game_book_desc_h: "Any verse in the Bible, no hints",
     game_book_meta_e: `${ROUND} well-known verses`, game_book_meta_h: "All 66 books",
@@ -1462,6 +1477,8 @@ const T = {
     daily_title: "Question du jour", daily_done: "Revenez demain pour une nouvelle question.",
     daily_streak: n => n ? `${n} ${n > 1 ? "jours" : "jour"} de suite` : "Répondez pour commencer une série",
     tile_quiz_daily: "La question du jour vous attend",
+    leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
+    leave_text: (i, n) => `Vous êtes à la question ${i} sur ${n}. Si vous quittez, la partie s'arrête et ne compte pas pour votre record.`,
     games_title: "Jeux", game_book: `De quel livre vient-il${NB}?`, game_book_short: `Quel livre${NB}?`,
     game_book_desc_e: "Des versets célèbres, avec un indice", game_book_desc_h: "N'importe quel verset de la Bible, sans indice",
     game_book_meta_e: `${ROUND} versets connus`, game_book_meta_h: "Les 66 livres",
@@ -1634,7 +1651,12 @@ document.addEventListener("click", e => {
 
 // ---------- Tabs ----------
 const TABS = ["today","find","bible","quiz","saved","settings","memo","badges"];
-function show(tab) {
+function show(tab, leaving = false) {
+  // Leaving a quiz or game: a round in progress asks first; either way the quiz starts fresh next time.
+  if (tab !== "quiz" && !leaving && quiz && !$("#s-quiz").hidden) {
+    if (!quiz.over) { askLeave(() => { endRound(); show(tab, true); }); return; }
+    endRound();
+  }
   TABS.forEach(n => { $("#s-" + n).hidden = n !== tab; });
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
   clearSelection();
@@ -2469,7 +2491,20 @@ function renderQuestion() {
     if (b && !b.disabled) answerQuestion(+b.dataset.n);
   });
   // In timed mode, running out of time counts as a wrong answer.
-  if (quiz.timed) { const at = quiz.i; quizTimer = setTimeout(() => { if (quiz && quiz.i === at && !quiz.qs[at].done) answerQuestion(-1); }, TIME * 1000); }
+  if (quiz.timed) runClock(TIME * 1000);
+}
+function runClock(ms) {
+  const at = quiz.i;
+  quiz.deadline = Date.now() + ms;
+  quizTimer = setTimeout(() => { if (quiz && quiz.i === at && !quiz.qs[at].done) answerQuestion(-1); }, ms);
+}
+// Stops or restarts the timed-mode clock and its burning fuse, for while the leave prompt is open.
+function pauseClock(paused) {
+  const q = quiz && quiz.timed && quiz.qs[quiz.i], fuse = $("#s-quiz .fuse i");
+  if (!q || q.done || quiz.kind) return;
+  if (paused) { clearTimeout(quizTimer); quiz.left = quiz.deadline - Date.now(); }
+  else runClock(quiz.left);
+  if (fuse) fuse.style.animationPlayState = paused ? "paused" : "running";
 }
 // n is the chosen answer's position, or -1 when time ran out.
 function answerQuestion(n) {
@@ -2494,9 +2529,29 @@ function answerQuestion(n) {
   $("#q-next").focus();
   $("#q-next").addEventListener("click", () => { if (last) finishQuiz(); else { quiz.i++; renderQuestion(); } });
 }
+function endRound() { clearTimeout(quizTimer); quiz = null; }
+let onLeave = null;
+function askLeave(then) {
+  onLeave = then;
+  $("#leave-text").textContent = t("leave_text", quiz.i + 1, ROUND);
+  $("#leave").hidden = false;
+  pauseClock(true);
+  $("#leave-stay").focus();
+}
+function closeLeave(go) {
+  $("#leave").hidden = true;
+  const then = onLeave; onLeave = null;
+  if (go && then) then(); else pauseClock(false);
+}
+$("#leave-go").addEventListener("click", () => closeLeave(true));
+$("#leave-stay").addEventListener("click", () => closeLeave(false));
+$("#leave").addEventListener("click", e => { if (e.target.id === "leave") closeLeave(false); });  // tapping outside keeps playing
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#leave").hidden) closeLeave(false); });
+
 // "Easy", or "Which book? · Easy" for the book game.
 const levelName = l => l === "be" || l === "bh" ? `${t("game_book_short")} · ${t(l === "be" ? "level_e" : "level_h")}` : t("level_" + l);
 function finishQuiz() {
+  quiz.over = true;
   const s = quiz.score, level = quiz.level, wasTimed = !!quiz.timed, best = bestOf(level, wasTimed), isBest = best === null || s > best;
   const isBook = quiz.kind === "book", name = levelName(level) + (wasTimed ? " · " + t("timed") : "");
   if (isBest) store("lamp.best." + level + (wasTimed ? ".timed" : ""), s);
