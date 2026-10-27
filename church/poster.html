@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lamp poster</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* One A4 page, English and French side by side. Light background to save ink; gold and night blue from the app. */
+@page { size: A4; margin: 0; }
+:root { --ink: #1a2034; --muted: #5d6680; --gold: #a8741c; --gold-soft: #f6ead2; --line: #e2d6bd; --night: #1a2340; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; color: var(--ink); font-family: "Figtree", system-ui, sans-serif; }
+.page {
+  width: 210mm; height: 297mm; overflow: hidden; padding: 12mm 14mm 9mm; display: flex; flex-direction: column; align-items: center; gap: 4.6mm;
+  background: radial-gradient(120mm 90mm at 50% 0%, #fbf4e6 0%, #fff 70%);
+}
+.brand { display: flex; align-items: center; gap: 4mm; }
+.logo { width: 15mm; height: 15mm; border-radius: 5mm; background: var(--night); display: grid; place-items: center; }
+.logo svg { width: 10mm; height: 10mm; stroke: #e3b45a; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.logo svg .flame { fill: #f3cf83; stroke: none; }
+h1 { margin: 0; font-family: "Cormorant Garamond", serif; font-weight: 600; font-size: 19mm; line-height: 1; letter-spacing: -.3mm; }
+.tag { text-align: center; font-size: 4.6mm; font-weight: 600; color: var(--muted); margin-top: -2.5mm; }
+.tag b { color: var(--gold); font-weight: 600; }
+.verse { text-align: center; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 5mm; line-height: 1.3; max-width: 165mm; }
+.verse small { display: block; font-family: "Figtree", sans-serif; font-style: normal; font-size: 3.2mm; font-weight: 700; letter-spacing: .4mm; color: var(--gold); text-transform: uppercase; margin-top: 1.5mm; }
+.qrwrap { display: flex; flex-direction: column; align-items: center; gap: 2mm; }
+.qr { width: 68mm; height: 68mm; padding: 5mm; background: #fff; border: 1.2mm solid var(--gold); border-radius: 7mm; box-shadow: 0 2mm 6mm rgba(168, 116, 28, .15); }
+.qr svg { width: 100%; height: 100%; display: block; }
+.scan { font-size: 5.4mm; font-weight: 700; }
+.url { font-size: 4mm; font-weight: 600; color: var(--muted); letter-spacing: .1mm; }
+.pills { display: flex; gap: 3mm; flex-wrap: wrap; justify-content: center; }
+.pill { font-size: 3.6mm; font-weight: 600; padding: 1.6mm 4mm; border-radius: 99mm; background: var(--gold-soft); color: #7a5414; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; width: 100%; }
+.col { border: .4mm solid var(--line); border-radius: 5mm; padding: 4.5mm 5mm; display: flex; flex-direction: column; gap: 2mm; background: #fff; }
+.col h2 { margin: 0; font-size: 3.4mm; letter-spacing: .5mm; text-transform: uppercase; color: var(--gold); }
+.col ul, .col ol { margin: 0; padding-left: 5mm; font-size: 3.5mm; line-height: 1.38; }
+.col li + li { margin-top: .3mm; }
+.col .phone { font-weight: 700; font-size: 3.5mm; margin-top: .6mm; }
+.foot { font-size: 3.1mm; color: var(--muted); text-align: center; max-width: 170mm; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24"><path class="flame" d="M12 2.5c1.5 2 2.6 3.1 2.6 4.7a2.6 2.6 0 0 1-5.2 0c0-1.6 1.1-2.7 2.6-4.7z"/><path d="M3.5 12.5h13.5a3 3 0 0 0 3-3h1.5"/><path d="M4.5 12.5c.4 3 3.6 5 7.5 5s7.1-2 7.5-5"/><path d="M9 21h6M12 17.5V21"/></svg></div>
+    <h1>Lamp</h1>
+  </div>
+  <div class="tag">Your Bible companion <b>·</b> Votre compagnon biblique</div>
+
+  <div class="verse">
+    “Thy word is a lamp unto my feet, and a light unto my path.”<br>
+    « Ta parole est une lampe à mes pieds, et une lumière sur mon sentier. »
+    <small>Psalm 119:105 · Psaume 119:105</small>
+  </div>
+
+  <div class="qrwrap">
+    <div class="qr">{{QR}}</div>
+    <div class="scan">Scan me · Scannez-moi</div>
+    <div class="url">{{URL_SHORT}}</div>
+  </div>
+
+  <div class="pills">
+    <span class="pill">Free · Gratuit</span>
+    <span class="pill">No account · Sans compte</span>
+    <span class="pill">Works offline · Hors ligne</span>
+  </div>
+
+  <div class="cols">
+    <div class="col" lang="en">
+      <h2>What's inside</h2>
+      <ul>
+        <li>A verse for how you feel today</li>
+        <li>The whole Bible in English and French</li>
+        <li>Quizzes, games and badges</li>
+        <li>Reading plans and a prayer journal</li>
+      </ul>
+      <h2 style="margin-top:1.5mm">Install in 3 steps</h2>
+      <div class="phone">iPhone (Safari)</div>
+      <ol><li>Scan the code with your camera</li><li>Tap <b>Share</b> (square with an arrow)</li><li>Tap <b>Add to Home Screen</b></li></ol>
+      <div class="phone">Android (Chrome)</div>
+      <ol><li>Scan the code with your camera</li><li>Tap the <b>⋮</b> menu</li><li>Tap <b>Install app</b></li></ol>
+    </div>
+    <div class="col" lang="fr">
+      <h2>Au programme</h2>
+      <ul>
+        <li>Un verset selon ce que vous ressentez</li>
+        <li>Toute la Bible en français et en anglais</li>
+        <li>Des quiz, des jeux et des badges</li>
+        <li>Des plans de lecture et un journal de prière</li>
+      </ul>
+      <h2 style="margin-top:1.5mm">Installer en 3 étapes</h2>
+      <div class="phone">iPhone (Safari)</div>
+      <ol><li>Scannez le code avec l'appareil photo</li><li>Touchez <b>Partager</b> (le carré avec une flèche)</li><li>Touchez <b>Sur l'écran d'accueil</b></li></ol>
+      <div class="phone">Android (Chrome)</div>
+      <ol><li>Scannez le code avec l'appareil photo</li><li>Touchez le menu <b>⋮</b></li><li>Touchez <b>Installer l'appli</b></li></ol>
+    </div>
+  </div>
+
+  <div class="foot">Your prayers and notes stay on your own phone: Lamp collects nothing.<br>Vos prières et vos notes restent sur votre téléphone : Lamp ne collecte rien.</div>
+</div>
+</body>
+</html>
