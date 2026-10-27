@@ -81,7 +81,8 @@ h1 { font-size: 2.1rem; }
 h2 { font-size: 1.5rem; }
 .eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
 .muted { color: var(--muted); }
-section.screen { display: flex; flex-direction: column; gap: 18px; }
+/* Screens and the blocks inside them (like the Bible's top and body) stack with the same spacing. */
+.screen { display: flex; flex-direction: column; gap: 18px; }
 header.top { display: flex; flex-direction: column; gap: 4px; }
 
 /* Verse card: the one lamplit object on each screen */
@@ -258,16 +259,16 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px;
 }
 .search:focus { outline: none; border-color: var(--gold); }
-.testament { display: flex; flex-direction: column; gap: 10px; }
-.books { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.testament { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+.books { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
 .book {
   text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-  padding: 10px 12px; color: var(--ink); font-weight: 600; font-size: .92rem;
+  padding: 13px 14px; color: var(--ink); font-weight: 600; font-size: .95rem;
   display: flex; justify-content: space-between; align-items: baseline; gap: 6px;
 }
 .book:hover, .chapters button:hover, .hit:hover { border-color: var(--gold); }
 .book small { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
-.chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+.chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 10px; }
 .chapters button {
   aspect-ratio: 1; max-width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
   color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums;
@@ -276,10 +277,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .reader-head {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 3; background: var(--bg);
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding-block: 10px; margin-top: -10px; border-bottom: 1px solid var(--line);
+  padding-block: 12px; margin-top: -12px; border-bottom: 1px solid var(--line);
 }
 .reader-head h2 { font-size: 1.35rem; white-space: nowrap; }
-.chapter-text { font-family: var(--font-read); font-size-adjust: var(--read-adjust, none); font-size: calc(1.28rem * var(--scale, 1)); line-height: 1.65; }
+.chapter-text { font-family: var(--font-read); font-size-adjust: var(--read-adjust, none); font-size: calc(1.28rem * var(--scale, 1)); line-height: 1.55; }
+/* Each verse starts on its own line, with a little air between verses. */
+.chapter-text:not(.parallel) .v { display: block; padding: 3px 6px; margin: 0 -6px .65em; }
 .chapter-text .v { border-radius: 5px; cursor: pointer; transition: background .4s; }
 .chapter-text .v sup { font-family: var(--font-ui); font-size: .58em; font-weight: 700; color: var(--gold); margin-right: 3px; }
 .chapter-text .v.sel { background: var(--gold-soft); box-shadow: 0 2px 0 var(--gold); }
