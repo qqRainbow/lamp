@@ -1,0 +1,6 @@
+# Built by build.py (GitHub builds its own copy when publishing)
+site/
+__pycache__/
+lamp.backup*.html
+lamp-test.html
+.claude/
