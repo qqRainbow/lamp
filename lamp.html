@@ -209,6 +209,21 @@ textarea:focus { outline: none; border-color: var(--gold); }
 .tile span:last-child { display: grid; gap: 2px; min-width: 0; }
 .tile b { font-size: .98rem; line-height: 1.25; }
 .tile small { color: var(--muted); font-size: .82rem; line-height: 1.3; overflow-wrap: anywhere; }
+.tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+/* Badges: earned ones glow gold, the rest wait in grey */
+.badges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.badge {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+  padding: 16px 12px; border-radius: 16px; border: 1px dashed var(--line); color: var(--muted);
+}
+.badge .ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--line); }
+.badge .ic svg { width: 26px; height: 26px; }
+.badge b { font-size: .95rem; line-height: 1.25; color: var(--ink); opacity: .55; }
+.badge small { font-size: .8rem; line-height: 1.3; }
+.badge.on { border-style: solid; background: var(--surface); }
+.badge.on .ic { background: radial-gradient(circle, var(--gold-soft) 35%, transparent 75%), var(--gold-soft); color: var(--gold); }
+.badge.on b { opacity: 1; }
+.badge .when { color: var(--gold); font-weight: 700; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; }
 
 /* Empty states: a lamplit icon, a line of text and the next step */
 .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding-block: 28px 8px; }
@@ -383,7 +398,7 @@ a.btn { display: inline-block; text-decoration: none; }
 details { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 10px 14px; }
 summary { cursor: pointer; font-weight: 700; }
 details ol { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 6px; font-size: .92rem; }
-.applink { flex: 1; min-width: 0; font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+.applink { flex: 1 1 100%; min-width: 0; font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
 
 /* Tab bar */
 nav.tabs {
@@ -471,7 +486,7 @@ nav.tabs button[aria-selected="true"] { color: var(--gold); }
       <div><button class="btn primary" type="button" id="install" data-t="install_app" hidden></button></div>
       <details id="home-ios"><summary>iPhone / iPad</summary><ol data-t="home_ios"></ol></details>
       <details id="home-android"><summary>Android</summary><ol data-t="home_android"></ol></details>
-      <div class="bar"><span class="applink" id="applink"></span><button class="btn" type="button" id="copylink" data-t="copy_link"></button></div>
+      <div class="bar"><span class="applink" id="applink"></span><button class="btn" type="button" id="copylink" data-t="copy_link"></button><button class="btn" type="button" id="tellfriend" data-t="tell_friend"></button></div>
     </div>
     <div class="settings">
       <div class="eyebrow" data-t="backup_title"></div>
@@ -493,6 +508,9 @@ nav.tabs button[aria-selected="true"] { color: var(--gold); }
 
   <!-- MEMORIZE (opened from its tile on Today) -->
   <section class="screen" id="s-memo" hidden></section>
+
+  <!-- BADGES -->
+  <section class="screen" id="s-badges" hidden></section>
 
   <!-- FIND -->
   <section class="screen" id="s-find" hidden>
@@ -1270,6 +1288,19 @@ const T = {
     daily_title: "Question of the day", daily_done: "Come back tomorrow for a new question.",
     daily_streak: n => n ? `${n} ${n === 1 ? "day" : "days"} in a row` : "Answer to start a streak",
     tile_quiz_daily: "Today's question is waiting",
+    games_title: "Games", game_book: "Which book is it from?", game_book_short: "Which book?",
+    game_book_desc_e: "Famous verses, with a hint", game_book_desc_h: "Any verse in the Bible, no hints",
+    game_book_meta_e: `${ROUND} well-known verses`, game_book_meta_h: "All 66 books",
+    game_book_q: "Which book is this verse from?", book_is: ref => `It's ${ref}.`,
+    share: "Share", tell_friend: "Tell a friend", toast_share_copied: "Copied. Paste it in a message to share.",
+    share_quiz: (s, level, timed) => `I scored ${s}/${ROUND} on Lamp's ${level} Bible quiz${timed ? ", against the clock" : ""}! Can you beat me?`,
+    share_book: (s, level) => `I found the right book for ${s} of ${ROUND} verses in Lamp's “Which book?” game (${level}). Your turn!`,
+    share_daily: (q, ok, n) => `Today's Bible question in Lamp: “${q}” ${ok ? "I got it right" : "I learned something new"}${n > 1 ? `, ${n} days in a row 🔥` : ""}. Can you answer it?`,
+    share_badges: (n, total) => `I've earned ${n} of ${total} badges in Lamp, my Bible companion app.`,
+    share_app: "Lamp is a free Bible companion: a verse for how you feel, the Bible in English and French, quizzes, reading plans and a prayer journal.",
+    badges_eyebrow: "Your progress", badges_title: "Badges", badges_count: (n, total) => `${n} of ${total} earned`,
+    badges_help: "Badges come as you read, play and pray. They're kept on this device, and in your backups.",
+    badge_new: name => `🏅 New badge: ${name}`, badges_new: n => `🏅 ${n} new badges!`, badge_earned: d => `Earned ${d}`,
     q_of: (i, n) => `Question ${i} of ${n}`, score: "Score",
     right: "Correct!", wrong: "Not quite.", answer_is: a => `The answer is ${a}${/[.!?»”]$/.test(a) ? "" : "."}`,
     next_q: "Next question", see_score: "See my score", quiz_done: "Quiz complete", new_best: "New best score!",
@@ -1431,6 +1462,19 @@ const T = {
     daily_title: "Question du jour", daily_done: "Revenez demain pour une nouvelle question.",
     daily_streak: n => n ? `${n} ${n > 1 ? "jours" : "jour"} de suite` : "Répondez pour commencer une série",
     tile_quiz_daily: "La question du jour vous attend",
+    games_title: "Jeux", game_book: `De quel livre vient-il${NB}?`, game_book_short: `Quel livre${NB}?`,
+    game_book_desc_e: "Des versets célèbres, avec un indice", game_book_desc_h: "N'importe quel verset de la Bible, sans indice",
+    game_book_meta_e: `${ROUND} versets connus`, game_book_meta_h: "Les 66 livres",
+    game_book_q: `De quel livre vient ce verset${NB}?`, book_is: ref => `C'est ${ref}.`,
+    share: "Partager", tell_friend: "En parler à un ami", toast_share_copied: "Copié. Collez-le dans un message pour le partager.",
+    share_quiz: (s, level, timed) => `J'ai fait ${s}/${ROUND} au quiz biblique de Lamp (niveau ${level}${timed ? ", en mode chrono" : ""})${NB}! Saurez-vous faire mieux${NB}?`,
+    share_book: (s, level) => `J'ai trouvé le bon livre pour ${s} versets sur ${ROUND} au jeu «${NB}Quel livre${NB}?${NB}» de Lamp (${level}). À vous${NB}!`,
+    share_daily: (q, ok, n) => `La question biblique du jour dans Lamp${NB}: «${NB}${q}${NB}» ${ok ? "J'ai trouvé la bonne réponse" : "J'ai appris quelque chose"}${n > 1 ? `, ${n} jours de suite 🔥` : ""}. Et vous${NB}?`,
+    share_badges: (n, total) => `J'ai obtenu ${n} badges sur ${total} dans Lamp, mon compagnon biblique.`,
+    share_app: `Lamp est un compagnon biblique gratuit${NB}: un verset selon ce que vous ressentez, la Bible en français et en anglais, des quiz, des plans de lecture et un journal de prière.`,
+    badges_eyebrow: "Vos progrès", badges_title: "Badges", badges_count: (n, total) => `${n} sur ${total} obtenus`,
+    badges_help: "Les badges arrivent au fil de vos lectures, de vos jeux et de vos prières. Ils sont gardés sur cet appareil et dans vos sauvegardes.",
+    badge_new: name => `🏅 Nouveau badge${NB}: ${name}`, badges_new: n => `🏅 ${n} nouveaux badges${NB}!`, badge_earned: d => `Obtenu le ${d}`,
     q_of: (i, n) => `Question ${i} sur ${n}`, score: "Score",
     right: `Bonne réponse${NB}!`, wrong: "Pas tout à fait.", answer_is: a => `La réponse est ${a}${/[.!?»”]$/.test(a) ? "" : "."}`,
     next_q: "Question suivante", see_score: "Voir mon score", quiz_done: "Quiz terminé", new_best: `Nouveau record${NB}!`,
@@ -1447,7 +1491,10 @@ const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }
-function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+function store(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+  if (key !== "lamp.badges") queueBadges();
+}
 
 // Lowercases and strips accents without changing the string's length, so match positions line up with the original text.
 function fold(s) {
@@ -1528,9 +1575,9 @@ store("lamp.saved", saved);
 const isSaved = id => saved.some(s => s.id === id);
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms = 1800) {
   const el = $("#toast"); el.textContent = msg; el.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), 1800);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), ms);
 }
 
 function verseCard(x, { lit = false, small = false, memo = false } = {}) {
@@ -1541,6 +1588,7 @@ function verseCard(x, { lit = false, small = false, memo = false } = {}) {
     <div class="actions" lang="${lang}">
       <button class="btn${on ? " on" : ""}" data-save="${x.id}">${on ? t("saved") : t("save")}</button>
       <button class="btn" data-copy="${x.id}">${t("copy")}</button>
+      ${navigator.share ? `<button class="btn" data-share-verse="${x.id}">${t("share")}</button>` : ""}
       <button class="btn" data-read="${x.id}">${t("read_chapter")}</button>
       ${memo ? `<button class="btn" data-memo-add="${x.id}">${t("memorize")}</button>` : ""}
     </div>
@@ -1576,12 +1624,16 @@ document.addEventListener("click", e => {
   }
   const r = e.target.closest("[data-read]");
   if (r) { const x = known.get(r.dataset.read); openChapter(x.b, x.c, x.v1); return; }
+  const sh = e.target.closest("[data-share]");
+  if (sh) { shareText(sh.dataset.share); return; }
+  const sv = e.target.closest("[data-share-verse]");
+  if (sv) { const x = known.get(sv.dataset.shareVerse); shareText(`${t("quote", x.text)} — ${formatRef(x.b, x.c, x.v1, x.v2)} (${VERSIONS[x.ver].short})`); return; }
   const g = e.target.closest("[data-go]");
   if (g) show(g.dataset.go);
 });
 
 // ---------- Tabs ----------
-const TABS = ["today","find","bible","quiz","saved","settings","memo"];
+const TABS = ["today","find","bible","quiz","saved","settings","memo","badges"];
 function show(tab) {
   TABS.forEach(n => { $("#s-" + n).hidden = n !== tab; });
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
@@ -1594,6 +1646,7 @@ function show(tab) {
   if (tab === "saved") renderSaved();
   if (tab === "quiz" && !quiz) renderQuizStart();
   if (tab === "bible") drawBible();
+  if (tab === "badges") renderBadges();
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.tab)));
 
@@ -1735,6 +1788,7 @@ function renderToday() {
     tile('data-go="quiz"', "quiz", t("tile_quiz"), dailyDone() ? t("tile_quiz_sub", best, QUIZ.length) : t("tile_quiz_daily")),
     tile('data-tile="pray"', "heart", t("tile_pray"), t("tile_pray_sub", open, prayers.length - open)),
     tile('data-go="memo"', "brain", t("memo_title"), t("tile_memo_sub", memory.length, memory.filter(m => m.learned).length)),
+    tile('data-go="badges"', "medal", t("badges_title"), t("badges_count", badgesEarned(), BADGES.length)).replace('class="tile"', 'class="tile wide"'),
   ].join("");
 }
 document.addEventListener("click", e => {
@@ -1758,6 +1812,8 @@ const ICONS = {
   brain: `<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 12.5h4"/><path d="M14 15.5l1.5 1.5 3-3"/></svg>`,
   gear: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
   marker: `<svg viewBox="0 0 24 24"><path d="M14.5 4.5l5 5-8.5 8.5H6v-5z"/><path d="M4 21h16"/></svg>`,
+  medal: `<svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="5.5"/><path d="M8.6 10.6L6 3h4l2 5 2-5h4l-2.6 7.6"/><path d="M12 12.6l.8 1.6 1.7.2-1.3 1.2.4 1.7-1.6-.9-1.6.9.4-1.7-1.3-1.2 1.7-.2z"/></svg>`,
+  share: `<svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg>`,
   sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>`,
 };
 const FLAME = `<svg viewBox="0 0 24 24"><path d="M12 2c2.6 3.4 5 5.6 5 9.2a5 5 0 0 1-10 0C7 7.6 9.4 5.4 12 2z"/></svg>`;
@@ -1954,6 +2010,9 @@ $("#s-bible").addEventListener("change", e => {
 
 function afterRead() {
   store("lamp.lastread", { b: rd.b, c: rd.c });
+  // Chapters opened, as "book.chapter", for the reading badges.
+  const chs = load("lamp.chapters", []), key = rd.b + "." + rd.c;
+  if (!chs.includes(key)) store("lamp.chapters", [...chs, key]);
   if (rd.v == null) return;
   const el = document.querySelector(`#bible-body .v[data-v="${rd.v}"][data-ver="${ver}"]`);
   rd.v = null;
@@ -2303,7 +2362,8 @@ const dailyDone = () => !!load("lamp.daily", { days: {} }).days[todayKey()];
 function dailyHTML() {
   const q = dailyQuestion(), done = load("lamp.daily", { days: {} }).days[todayKey()], n = dailyStreak();
   const opts = q.opts.map((o, i) => {
-    const cls = !done ? "" : o === q.a ? " right" : o === done.pick ? " wrong" : "";
+    const picked = typeof done?.pick === "number" ? i === done.pick : o === done?.pick;
+    const cls = !done ? "" : o === q.a ? " right" : picked ? " wrong" : "";
     return `<button class="opt${cls}" data-daily="${i}"${done ? " disabled" : ""}>${esc(o)}</button>`;
   }).join("");
   return `<div class="markcard">
@@ -2312,7 +2372,8 @@ function dailyHTML() {
     <div class="options">${opts}</div>
     ${done ? `<p style="margin:0"><strong style="color:var(${done.ok ? "--good" : "--bad"})">${done.ok ? t("right") : t("wrong")}</strong>
       <span class="muted">${done.ok ? "" : t("answer_is", esc(q.a))} ${t("daily_done")}</span></p>
-      ${q.at ? verseCard(quizVerse(q.at), { small: true }) : `<div class="note">${esc(q.note)}</div>`}` : ""}
+      ${q.at ? verseCard(quizVerse(q.at), { small: true }) : `<div class="note">${esc(q.note)}</div>`}
+      <div><button class="btn" data-share="${esc(t("share_daily", q.q, done.ok, n))}">${t("share")}</button></div>` : ""}
   </div>`;
 }
 
@@ -2337,6 +2398,16 @@ function renderQuizStart() {
         <span class="lv-meta">${t("n_questions", n)}${best !== null ? ` · ${t("best_short", best)}` : ""}</span>
       </button>`;
     }).join("")}</div>
+    <div class="eyebrow" style="margin-top:6px">${t("games_title")}</div>
+    <div class="levels">${(kids ? ["be"] : ["be", "bh"]).map(l => {
+      const best = bestOf(l), k = l === "be" ? "e" : "h";
+      return `<button class="level" data-game="${l}">
+        <span class="lv-top"><span class="lv-name">${t("game_book")}</span><span class="ic" style="color:var(--gold)" aria-hidden="true">${ICONS.book}</span></span>
+        <span class="lv-desc">${t("level_" + k)} · ${t("game_book_desc_" + k)}</span>
+        <span class="lv-meta">${t("game_book_meta_" + k)}${best !== null ? ` · ${t("best_short", best)}` : ""}</span>
+      </button>`;
+    }).join("")}</div>
+    <div class="tiles"><button class="tile wide" data-go="badges"><span class="ic">${ICONS.medal}</span><span><b>${t("badges_title")}</b><small>${t("badges_count", badgesEarned(), BADGES.length)}</small></span></button></div>
     <div class="fact" aria-live="polite">
       <div class="head"><span class="ic">${ICONS.sun}</span><span class="eyebrow">${t("fact_title")}</span></div>
       <p id="fact-text"></p>
@@ -2346,14 +2417,17 @@ function renderQuizStart() {
   $("#fact-next").addEventListener("click", () => { factIndex++; showFact(); });
 }
 $("#s-quiz").addEventListener("click", e => {
-  const el = e.target.closest("[data-level],[data-timed],[data-daily]");
+  const el = e.target.closest("[data-level],[data-timed],[data-daily],[data-game],[data-bn],[data-book-next]");
   if (!el || el.disabled) return;
   const d = el.dataset;
   if (d.level) startQuiz(d.level);
+  else if (d.game) startBookGame(d.game);
+  else if (d.bn) answerBook(+d.bn);
+  else if (d.bookNext !== undefined) { if (quiz.i === ROUND - 1) finishQuiz(); else { quiz.i++; renderBookQ(); scrollTo(0, 0); } }
   else if (d.timed) { timed = d.timed === "1"; store("lamp.timed", timed); renderQuizStart(); }
   else if (d.daily) {
     const q = dailyQuestion(), pick = q.opts[+d.daily], state = load("lamp.daily", { days: {} });
-    state.days[todayKey()] = { ok: pick === q.a, pick };
+    state.days[todayKey()] = { ok: pick === q.a, pick: +d.daily };  // the answer's position, the same in both languages
     store("lamp.daily", state);
     renderQuizStart();
     renderToday();
@@ -2420,20 +2494,181 @@ function answerQuestion(n) {
   $("#q-next").focus();
   $("#q-next").addEventListener("click", () => { if (last) finishQuiz(); else { quiz.i++; renderQuestion(); } });
 }
+// "Easy", or "Which book? · Easy" for the book game.
+const levelName = l => l === "be" || l === "bh" ? `${t("game_book_short")} · ${t(l === "be" ? "level_e" : "level_h")}` : t("level_" + l);
 function finishQuiz() {
-  const s = quiz.score, level = quiz.level, wasTimed = quiz.timed, best = bestOf(level, wasTimed), isBest = best === null || s > best;
+  const s = quiz.score, level = quiz.level, wasTimed = !!quiz.timed, best = bestOf(level, wasTimed), isBest = best === null || s > best;
+  const isBook = quiz.kind === "book", name = levelName(level) + (wasTimed ? " · " + t("timed") : "");
   if (isBest) store("lamp.best." + level + (wasTimed ? ".timed" : ""), s);
   const msg = s === ROUND ? t("msg_perfect") : s >= 7 ? t("msg_great") : s >= 4 ? t("msg_good") : t("msg_start");
   $("#s-quiz").innerHTML = `
-    <header class="top"><span class="eyebrow">${t("quiz_done")} · ${t("level_" + level)}${wasTimed ? " · " + t("timed") : ""}</span></header>
+    <header class="top"><span class="eyebrow">${t("quiz_done")} · ${name}</span></header>
     <div class="score">${s}<span class="muted" style="font-size:2rem">/${ROUND}</span></div>
     <h2>${msg}</h2>
     ${isBest && best !== null ? `<p style="margin:0;color:var(--good);font-weight:600">${t("new_best")}</p>` : ""}
     ${verseCard(moodVerse(VERSES.find(v => v.ref === "Psalm 119:105")), { small: true, lit: true })}
-    <div class="bar"><button class="btn primary" id="q-again">${t("play_again")}</button><button class="btn" id="q-levels">${t("change_level")}</button></div>`;
-  $("#q-again").addEventListener("click", () => startQuiz(level));
+    <div class="bar"><button class="btn primary" id="q-again">${t("play_again")}</button><button class="btn" data-share="${esc(isBook ? t("share_book", s, t(level === "be" ? "level_e" : "level_h")) : t("share_quiz", s, t("level_" + level), wasTimed))}">${t("share")}</button><button class="btn" id="q-levels">${t("change_level")}</button></div>`;
+  $("#q-again").addEventListener("click", () => isBook ? startBookGame(level) : startQuiz(level));
   $("#q-levels").addEventListener("click", () => { quiz = null; renderQuizStart(); scrollTo(0, 0); });
   renderToday();
+}
+
+// ---------- "Which book is it from?" ----------
+// Easy ("be"): well-known verses from the Find list, with the testament as a hint.
+// Hard ("bh"): any verse of the Bible, and the wrong answers come from the same part of the Bible.
+const BOOK_GROUPS = [[0, 5], [5, 17], [17, 22], [22, 27], [27, 39], [39, 44], [44, 57], [57, 66]];  // law, history, poetry, prophets, minor prophets, gospels and Acts, Paul, other letters and Revelation
+function bookOptions(b, hard) {
+  const [from, to] = hard ? BOOK_GROUPS.find(([a, z]) => b >= a && b < z) : [0, BOOKS.length];
+  return shuffle([b, ...shuffle(range(from, to).filter(x => x !== b)).slice(0, 3)]);
+}
+// A random verse long enough to guess from, that doesn't give its own book away by name.
+function randomVerse(bible) {
+  for (;;) {
+    const b = Math.floor(Math.random() * BOOKS.length), c = Math.floor(Math.random() * bible[b].length);
+    const v = Math.floor(Math.random() * bible[b][c].length), text = bible[b][c][v];
+    if (!text || text.length < 60) continue;
+    const f = fold(text);
+    if ([BOOKS[b], BOOKS_FR[b]].some(n => f.includes(fold(n.replace(/^\d /, ""))))) continue;
+    return remember({ ver, b, c, v1: v, v2: v, text });
+  }
+}
+async function startBookGame(level) {
+  const hard = level === "bh";
+  let list;
+  if (hard) {
+    if (!cur()) {
+      $("#s-quiz").innerHTML = `<div class="note muted">${t("opening")}</div>`;
+      try { await loadBible(ver); } catch { $("#s-quiz").innerHTML = `<div class="note">${t("load_failed")}</div>`; return; }
+    }
+    list = range(0, ROUND).map(() => randomVerse(cur()));
+  } else {
+    // Ten famous verses from ten different books.
+    const seen = new Set();
+    list = [];
+    for (const v of shuffle(VERSES)) {
+      const x = moodVerse(v);
+      if (!seen.has(x.b)) { seen.add(x.b); list.push(x); }
+      if (list.length === ROUND) break;
+    }
+  }
+  quiz = { kind: "book", level, i: 0, score: 0, qs: list.map(x => ({ x, opts: bookOptions(x.b, hard) })) };
+  renderBookQ();
+}
+function renderBookQ() {
+  const q = quiz.qs[quiz.i];
+  $("#s-quiz").innerHTML = `
+    <div class="qmeta"><span>${levelName(quiz.level)} · ${t("q_of", quiz.i + 1, ROUND)}</span><span>${t("score")} ${quiz.score}</span></div>
+    <div class="progress"><i style="width:${(quiz.i / ROUND) * 100}%"></i></div>
+    ${quiz.level === "be" ? `<span class="eyebrow">${t(q.x.b < OT ? "ot" : "nt")}</span>` : ""}
+    <blockquote class="quote" lang="${VERSIONS[ver].lang}">${esc(q.x.text)} <cite>${VERSIONS[ver].short}</cite></blockquote>
+    <div class="question">${t("game_book_q")}</div>
+    <div class="options">${q.opts.map((b, n) => `<button class="opt" data-bn="${n}">${bookName(b)}</button>`).join("")}</div>
+    <div class="feedback" id="fb"></div>`;
+}
+function answerBook(n) {
+  const q = quiz.qs[quiz.i];
+  if (q.done) return;
+  q.done = true;
+  const right = q.opts[n] === q.x.b, x = q.x, on = isSaved(x.id);
+  if (right) quiz.score++;
+  document.querySelectorAll("#s-quiz .opt").forEach(o => {
+    o.disabled = true;
+    if (q.opts[+o.dataset.bn] === x.b) o.classList.add("right");
+    else if (+o.dataset.bn === n) o.classList.add("wrong");
+  });
+  $("#fb").innerHTML = `<p style="margin:0"><strong style="color:var(${right ? "--good" : "--bad"})">${right ? t("right") : t("wrong")}</strong>
+      <span class="muted">${t("book_is", formatRef(x.b, x.c, x.v1, x.v2))}</span></p>
+    <div class="actions"><button class="btn${on ? " on" : ""}" data-save="${x.id}">${on ? t("saved") : t("save")}</button><button class="btn" data-read="${x.id}">${t("read_chapter")}</button></div>
+    <div><button class="btn primary" data-book-next>${quiz.i === ROUND - 1 ? t("see_score") : t("next_q")}</button></div>`;
+  $(".qmeta span:last-child").textContent = `${t("score")} ${quiz.score}`;
+}
+
+// ---------- Sharing ----------
+// The phone's share sheet where there is one; otherwise the text and link are copied for pasting into a message.
+async function shareText(text) {
+  if (navigator.share) {
+    try { await navigator.share({ title: "Lamp", text, url: APP_URL }); countShare(); return; }
+    catch (err) { if (err && err.name === "AbortError") return; }
+  }
+  navigator.clipboard.writeText(text + "\n" + APP_URL).then(() => { countShare(); toast(t("toast_share_copied"), 2600); }, () => toast(t("toast_nocopy")));
+}
+const countShare = () => store("lamp.shared", load("lamp.shared", 0) + 1);
+
+// ---------- Badges ----------
+// Earned from what's already kept on this device; lamp.badges remembers when each was earned: { id: ms }.
+function longestRun(dateKeys) {
+  const days = [...new Set(dateKeys)].map(dayNum).sort((a, b) => a - b);
+  let best = 0, run = 0;
+  days.forEach((d, i) => { run = i && d === days[i - 1] + 1 ? run + 1 : 1; best = Math.max(best, run); });
+  return best;
+}
+function progress() {
+  const daily = Object.keys(load("lamp.daily", { days: {} }).days), chs = load("lamp.chapters", []);
+  const best = (l, timed = false) => bestOf(l, timed) ?? -1;
+  const perBook = {};
+  chs.forEach(k => { const b = +k.split(".")[0]; perBook[b] = (perBook[b] || 0) + 1; });
+  const startedPlans = load("lamp.plans", {}), prayersNow = load("lamp.prayers", []), mem = load("lamp.memory", []);
+  return {
+    daily: daily.length, streak: longestRun(daily), best,
+    bestAny: Math.max(...["e", "m", "h", "who", "be", "bh"].flatMap(l => [best(l), best(l, true)])),
+    bestTimed: Math.max(...["e", "m", "h", "who"].map(l => best(l, true))),
+    chapters: chs.length, wholeBook: Object.entries(perBook).some(([b, n]) => CHAPTERS[b] > 1 && n >= CHAPTERS[b]),
+    planDone: Object.entries(startedPlans).some(([id, st]) => PLAN_BY_ID[id] && Object.keys(st.done).length >= planDays(PLAN_BY_ID[id]).length),
+    marks: Object.keys(load("lamp.marks", {})).length, saved: load("lamp.saved", []).length,
+    prayers: prayersNow.length, answered: prayersNow.some(p => p.answered),
+    learned: mem.filter(m => m.learned).length, shared: load("lamp.shared", 0),
+  };
+}
+const BADGES = [
+  { id: "daily", icon: "quiz", test: p => p.daily >= 1, en: ["First question", "Answer a question of the day"], fr: ["Première question", "Répondre à une question du jour"] },
+  { id: "streak3", icon: "flame", test: p => p.streak >= 3, en: ["Three in a row", "Answer the question of the day 3 days in a row"], fr: ["Trois de suite", "Répondre à la question du jour 3 jours de suite"] },
+  { id: "streak7", icon: "flame", test: p => p.streak >= 7, en: ["Faithful week", "Answer the question of the day 7 days in a row"], fr: ["Semaine fidèle", "Répondre à la question du jour 7 jours de suite"] },
+  { id: "streak30", icon: "flame", test: p => p.streak >= 30, en: ["Faithful month", "Answer the question of the day 30 days in a row"], fr: ["Mois fidèle", "Répondre à la question du jour 30 jours de suite"] },
+  { id: "perfect", icon: "quiz", test: p => p.bestAny >= ROUND, en: ["Perfect round", `Score ${ROUND} out of ${ROUND} in any game`], fr: ["Sans faute", `Faire ${ROUND} sur ${ROUND} à n'importe quel jeu`] },
+  { id: "scholar", icon: "quiz", test: p => ["e", "m", "h"].every(l => p.best(l) >= 7), en: ["Scholar", "Score 7 or more on Easy, Medium and Hard"], fr: ["Érudit", "Faire 7 ou plus en Facile, Moyen et Difficile"] },
+  { id: "quick", icon: "sun", test: p => p.bestTimed >= 7, en: ["Quick thinker", "Score 7 or more in timed mode"], fr: ["Esprit vif", "Faire 7 ou plus en mode chrono"] },
+  { id: "who", icon: "quote", test: p => p.best("who") >= 8, en: ["Good listener", "Score 8 or more in “Who said it?”"], fr: ["Bonne oreille", `Faire 8 ou plus à «${NB}Qui a dit cela${NB}?${NB}»`] },
+  { id: "bookE", icon: "book", test: p => p.best("be") >= 7, en: ["Book finder", "Score 7 or more in “Which book?” (Easy)"], fr: ["Bon repère", `Faire 7 ou plus à «${NB}Quel livre${NB}?${NB}» (Facile)`] },
+  { id: "bookH", icon: "search", test: p => p.best("bh") >= 7, en: ["Bible detective", "Score 7 or more in “Which book?” (Hard)"], fr: ["Détective biblique", `Faire 7 ou plus à «${NB}Quel livre${NB}?${NB}» (Difficile)`] },
+  { id: "read10", icon: "book", test: p => p.chapters >= 10, en: ["Reader", "Read 10 chapters of the Bible"], fr: ["Lecteur", "Lire 10 chapitres de la Bible"] },
+  { id: "read100", icon: "book", test: p => p.chapters >= 100, en: ["Devoted reader", "Read 100 chapters of the Bible"], fr: ["Lecteur assidu", "Lire 100 chapitres de la Bible"] },
+  { id: "wholebook", icon: "lamp", test: p => p.wholeBook, en: ["Cover to cover", "Read every chapter of a book"], fr: ["Du début à la fin", "Lire tous les chapitres d'un livre"] },
+  { id: "plan", icon: "plan", test: p => p.planDone, en: ["Plan complete", "Finish a reading plan"], fr: ["Plan terminé", "Terminer un plan de lecture"] },
+  { id: "marks", icon: "marker", test: p => p.marks >= 10, en: ["Highlighter", "Highlight or add notes to 10 verses"], fr: ["Surligneur", "Surligner ou annoter 10 versets"] },
+  { id: "saved", icon: "bookmark", test: p => p.saved >= 10, en: ["Treasure keeper", "Save 10 verses"], fr: ["Gardien de trésors", "Enregistrer 10 versets"] },
+  { id: "prayer", icon: "heart", test: p => p.prayers >= 1, en: ["First prayer", "Write a prayer in your journal"], fr: ["Première prière", "Écrire une prière dans le journal"] },
+  { id: "answered", icon: "heart", test: p => p.answered, en: ["Answered prayer", "Mark a prayer as answered"], fr: ["Prière exaucée", "Marquer une prière comme exaucée"] },
+  { id: "memo1", icon: "brain", test: p => p.learned >= 1, en: ["Hidden in my heart", "Learn a verse by heart"], fr: ["Gardé dans mon cœur", "Apprendre un verset par cœur"] },
+  { id: "memo5", icon: "brain", test: p => p.learned >= 5, en: ["Memory keeper", "Learn 5 verses by heart"], fr: ["Mémoire vive", "Apprendre 5 versets par cœur"] },
+  { id: "share", icon: "share", test: p => p.shared >= 1, en: ["Messenger", "Share something from Lamp with someone"], fr: ["Messager", "Partager quelque chose de Lamp avec quelqu'un"] },
+];
+const badgesEarned = () => { const got = load("lamp.badges", {}); return BADGES.filter(b => got[b.id]).length; };
+// Saves can earn badges; checking a moment later lets a burst of saves count once, after the screen has updated.
+var badgeTimer;  // var, not let: the app saves data while starting up, before this line has run
+function queueBadges() { clearTimeout(badgeTimer); badgeTimer = setTimeout(checkBadges, 700); }
+function checkBadges() {
+  const got = load("lamp.badges", {}), p = progress(), fresh = BADGES.filter(b => !got[b.id] && b.test(p));
+  if (!fresh.length) return;
+  fresh.forEach(b => { got[b.id] = Date.now(); });
+  store("lamp.badges", got);
+  toast(fresh.length === 1 ? t("badge_new", fresh[0][lang][0]) : t("badges_new", fresh.length), 3200);
+  if (!$("#s-badges").hidden) renderBadges();
+  if (!$("#s-today").hidden) renderToday();
+}
+// "27 Oct", with the year only when it isn't this year.
+const shortDate = ms => new Date(ms).toLocaleDateString(lang, { day: "numeric", month: "short", ...(new Date(ms).getFullYear() !== new Date().getFullYear() && { year: "numeric" }) });
+function renderBadges() {
+  const got = load("lamp.badges", {}), n = badgesEarned();
+  $("#s-badges").innerHTML = `
+    <header class="top"><span class="eyebrow">${t("badges_eyebrow")}</span><h1>${t("badges_title")}</h1></header>
+    <div class="bar"><span class="pmeta" style="flex:1">${t("badges_count", n, BADGES.length)}</span>${n ? `<button class="btn" data-share="${esc(t("share_badges", n, BADGES.length))}">${t("share")}</button>` : ""}</div>
+    <div class="progress"><i style="width:${(n / BADGES.length) * 100}%"></i></div>
+    <p class="muted small">${t("badges_help")}</p>
+    <div class="badges">${BADGES.map(b => `<div class="badge${got[b.id] ? " on" : ""}">
+        <span class="ic" aria-hidden="true">${b.icon === "flame" ? FLAME : ICONS[b.icon]}</span>
+        <b>${b[lang][0]}</b><small>${b[lang][1]}</small>
+        ${got[b.id] ? `<small class="when">${t("badge_earned", shortDate(got[b.id]))}</small>` : ""}
+      </div>`).join("")}</div>`;
 }
 
 // ---------- Journal: prayers, saved verses, highlights ----------
@@ -2969,6 +3204,7 @@ if (STANDALONE && isInstalled()) {
 function renderExtras() {
   $("#rlink").href = reminderLink();
   $("#applink").textContent = APP_URL;
+  $("#tellfriend").dataset.share = t("share_app");
 }
 $("#rtime").value = load("lamp.remind", "08:00");
 $("#rtime").addEventListener("change", () => { store("lamp.remind", $("#rtime").value); renderExtras(); });
