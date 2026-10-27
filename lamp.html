@@ -417,6 +417,14 @@ nav.tabs button {
 nav.tabs button svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 nav.tabs button[aria-selected="true"] { color: var(--gold); }
 
+/* "A new version is ready" bar, at the top of the screen */
+.updatebar {
+  position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 10px);
+  width: min(calc(100% - 24px), 520px); display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px 10px 10px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18); font-size: .9rem; font-weight: 600;
+}
+.updatebar span { flex: 1; }
 /* "Leave this round?" prompt */
 .confirm { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 25, .45); }
 .confirm .in {
@@ -604,6 +612,7 @@ nav.tabs button[aria-selected="true"] { color: var(--gold); }
   </form>
 </div></div>
 <div class="toast" id="toast" hidden></div>
+<div class="updatebar" id="updatebar" role="status" hidden><span data-t="update_ready"></span><button class="btn primary" type="button" id="update-go" data-t="update_go"></button><button class="btn" type="button" id="update-later" data-t-label="update_later">×</button></div>
 <div class="confirm" id="leave" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-text" hidden><div class="in">
   <h2 id="leave-title" data-t="leave_title"></h2>
   <p class="muted" id="leave-text"></p>
@@ -1302,6 +1311,7 @@ const T = {
     daily_title: "Question of the day", daily_done: "Come back tomorrow for a new question.",
     daily_streak: n => n ? `${n} ${n === 1 ? "day" : "days"} in a row` : "Answer to start a streak",
     tile_quiz_daily: "Today's question is waiting",
+    update_ready: "A new version of Lamp is ready.", update_go: "Refresh", update_later: "Not now",
     leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
     back_to_quiz: (i, n) => `‹ Back to the quiz · question ${i} of ${n}`, back_to_game: (i, n) => `‹ Back to the game · question ${i} of ${n}`,
     leave_text: (i, n) => `You're on question ${i} of ${n}. If you leave, this round ends and won't count toward your best score.`,
@@ -1479,6 +1489,7 @@ const T = {
     daily_title: "Question du jour", daily_done: "Revenez demain pour une nouvelle question.",
     daily_streak: n => n ? `${n} ${n > 1 ? "jours" : "jour"} de suite` : "Répondez pour commencer une série",
     tile_quiz_daily: "La question du jour vous attend",
+    update_ready: "Une nouvelle version de Lamp est prête.", update_go: "Actualiser", update_later: "Plus tard",
     leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
     back_to_quiz: (i, n) => `‹ Retour au quiz · question ${i} sur ${n}`, back_to_game: (i, n) => `‹ Retour au jeu · question ${i} sur ${n}`,
     leave_text: (i, n) => `Vous êtes à la question ${i} sur ${n}. Si vous quittez, la partie s'arrête et ne compte pas pour votre record.`,
@@ -3252,6 +3263,10 @@ $("#rics").addEventListener("click", () => {
     "END:VEVENT", "END:VCALENDAR"].join("\r\n");
   saveFile("lamp-reminder.ics", ics, "text/calendar");
 });
+// Lamp's website calls this when a new version arrived while Lamp was open (see the service worker setup at the end of the page).
+window.lampUpdated = () => { $("#updatebar").hidden = false; };
+$("#update-go").addEventListener("click", () => location.reload());
+$("#update-later").addEventListener("click", () => { $("#updatebar").hidden = true; });
 // Installing: Chrome and Edge offer their own prompt; Safari needs the Share steps.
 let installPrompt = null;
 const isInstalled = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;

@@ -5,9 +5,13 @@ const DATA = "lamp-data-__DATA_VERSION__";      // Bibles, cross-references and 
 const FONTS = "lamp-fonts";
 const SHELL_FILES = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png",
   "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
+const PAGE_WAIT = 3000;  // how long opening Lamp waits for the newest page before using the saved one
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(SHELL).then(c => c.addAll(SHELL_FILES)).then(() => self.skipWaiting()));
+  // "reload" skips the browser's own cache (GitHub lets it keep files 10 minutes), so a new version saves new files.
+  e.waitUntil(caches.open(SHELL)
+    .then(c => c.addAll(SHELL_FILES.map(f => new Request(f, { cache: "reload" }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {
@@ -27,13 +31,27 @@ async function cacheFirst(cacheName, request, key = request) {
   return res;
 }
 
+// The app page: the newest from the internet when it answers quickly, otherwise the saved copy (offline, or a slow connection).
+// "no-cache" asks GitHub whether the page changed, which is a tiny request when it hasn't.
+async function newestPage() {
+  const cache = await caches.open(SHELL), key = new URL("./", location.href).href;
+  try {
+    const res = await Promise.race([
+      fetch(key, { cache: "no-cache", credentials: "same-origin" }),
+      new Promise((_, fail) => setTimeout(() => fail(new Error("slow")), PAGE_WAIT)),
+    ]);
+    if (res.ok) { await cache.put(key, res.clone()); return res; }
+  } catch {}
+  return (await cache.match(key)) || fetch(key);
+}
+
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (req.mode === "navigate" && url.origin === location.origin) {
     // Every page of the app is the same document.
-    e.respondWith(cacheFirst(SHELL, req, new URL("./", location.href).href).catch(() => caches.match("./")));
+    e.respondWith(newestPage());
   } else if (url.origin === location.origin && url.pathname.endsWith(".json")) {
     e.respondWith(cacheFirst(DATA, req));
   } else if (url.origin === location.origin) {

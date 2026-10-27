@@ -38,7 +38,13 @@ HEAD = """<!doctype html>
 """
 FOOT = """
 <script>
-if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+// Offline support. Lamp also looks for a new version each time it comes back on screen, and offers to switch to it.
+if ("serviceWorker" in navigator) addEventListener("load", async () => {
+  const hadVersion = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadVersion && window.lampUpdated) lampUpdated(); });
+  const reg = await navigator.serviceWorker.register("sw.js");
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); });
+});
 </script>
 </body>
 </html>
