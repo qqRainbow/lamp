@@ -537,6 +537,7 @@ nav.tabs button[aria-selected="true"] { color: var(--gold); }
 
   <!-- BIBLE -->
   <section class="screen" id="s-bible" hidden>
+    <div id="quiz-back" hidden><button class="btn primary" type="button" data-go="quiz"></button></div>
     <div id="bible-top" class="screen" style="gap:14px">
       <header class="top">
         <span class="eyebrow" id="bible-version-name"></span>
@@ -1302,6 +1303,7 @@ const T = {
     daily_streak: n => n ? `${n} ${n === 1 ? "day" : "days"} in a row` : "Answer to start a streak",
     tile_quiz_daily: "Today's question is waiting",
     leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
+    back_to_quiz: (i, n) => `‹ Back to the quiz · question ${i} of ${n}`, back_to_game: (i, n) => `‹ Back to the game · question ${i} of ${n}`,
     leave_text: (i, n) => `You're on question ${i} of ${n}. If you leave, this round ends and won't count toward your best score.`,
     games_title: "Games", game_book: "Which book is it from?", game_book_short: "Which book?",
     game_book_desc_e: "Famous verses, with a hint", game_book_desc_h: "Any verse in the Bible, no hints",
@@ -1478,6 +1480,7 @@ const T = {
     daily_streak: n => n ? `${n} ${n > 1 ? "jours" : "jour"} de suite` : "Répondez pour commencer une série",
     tile_quiz_daily: "La question du jour vous attend",
     leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
+    back_to_quiz: (i, n) => `‹ Retour au quiz · question ${i} sur ${n}`, back_to_game: (i, n) => `‹ Retour au jeu · question ${i} sur ${n}`,
     leave_text: (i, n) => `Vous êtes à la question ${i} sur ${n}. Si vous quittez, la partie s'arrête et ne compte pas pour votre record.`,
     games_title: "Jeux", game_book: `De quel livre vient-il${NB}?`, game_book_short: `Quel livre${NB}?`,
     game_book_desc_e: "Des versets célèbres, avec un indice", game_book_desc_h: "N'importe quel verset de la Bible, sans indice",
@@ -1640,7 +1643,11 @@ document.addEventListener("click", e => {
     return;
   }
   const r = e.target.closest("[data-read]");
-  if (r) { const x = known.get(r.dataset.read); openChapter(x.b, x.c, x.v1); return; }
+  if (r) {
+    // From inside a round, reading the verse behind an answer keeps the round waiting (see show).
+    if (quiz && !quiz.over && r.closest("#s-quiz")) quiz.trip = { y: scrollY };
+    const x = known.get(r.dataset.read); openChapter(x.b, x.c, x.v1); return;
+  }
   const sh = e.target.closest("[data-share]");
   if (sh) { shareText(sh.dataset.share); return; }
   const sv = e.target.closest("[data-share-verse]");
@@ -1653,7 +1660,9 @@ document.addEventListener("click", e => {
 const TABS = ["today","find","bible","quiz","saved","settings","memo","badges"];
 function show(tab, leaving = false) {
   // Leaving a quiz or game: a round in progress asks first; either way the quiz starts fresh next time.
-  if (tab !== "quiz" && !leaving && quiz && !$("#s-quiz").hidden) {
+  // Reading an answer's chapter is a side trip to the Bible, and the round waits for the reader to come back.
+  const onTrip = !!(quiz && quiz.trip) && !$("#s-bible").hidden;
+  if (tab !== "quiz" && !leaving && quiz && (onTrip || !$("#s-quiz").hidden) && !(quiz.trip && tab === "bible")) {
     if (!quiz.over) { askLeave(() => { endRound(); show(tab, true); }); return; }
     endRound();
   }
@@ -1667,6 +1676,7 @@ function show(tab, leaving = false) {
   if (tab === "memo") { memoView = null; renderMemo(); }
   if (tab === "saved") renderSaved();
   if (tab === "quiz" && !quiz) renderQuizStart();
+  if (tab === "quiz" && quiz && quiz.trip) { scrollTo(0, quiz.trip.y); quiz.trip = null; }  // back from reading, to the same spot
   if (tab === "bible") drawBible();
   if (tab === "badges") renderBadges();
 }
@@ -1924,7 +1934,9 @@ function openChapter(b, c, v = null, plan = null) {
 }
 
 async function drawBible() {
-  const body = $("#bible-body");
+  const body = $("#bible-body"), trip = quiz && quiz.trip;
+  $("#quiz-back").hidden = !trip;
+  if (trip) $("#quiz-back button").textContent = t(quiz.kind ? "back_to_game" : "back_to_quiz", quiz.i + 1, ROUND);
   clearSelection();
   $("#bible-top").hidden = rd.view === "read" || rd.view === "plans" || rd.view === "study";
   $("main").classList.toggle("wide", rd.view === "read" && !!cmpVer());
