@@ -2,6 +2,13 @@
 
 Lamp is a free Bible companion web app (PWA) in **English and French**, built for the owner's church. It is live at https://qqrainbow.github.io/lamp/ from the repo https://github.com/qqRainbow/lamp. The owner has some coding experience; explain things plainly and test before saying something works.
 
+**Keep this file up to date (the owner asked for this).** The owner switches between a Windows PC and a Mac, and each computer has its own Claude conversations, so this file is the only memory they share. Whenever a piece of work is finished (a feature, a fix, a decision, a change of plan):
+1. Add a dated line to the **Work log** at the end of this file: what changed, and anything left unfinished.
+2. Update the other sections if they no longer match (layout, conventions, the App Store plan, open decisions).
+3. Commit this file together with the change, and push it, so the other computer gets it with `git pull`.
+
+At the start of a session, run `git pull` first, then read the Work log and **Open decisions** to see where things stand.
+
 **Ground rules from the owner**
 - Lamp must stay **standalone**: no accounts, no tracking, no features that depend on Claude or any service of ours. Everything a user creates stays on their device (localStorage), with Settings → Back up to move it.
 - French matters as much as English. Every user-facing string exists in both.
@@ -54,3 +61,27 @@ The owner has a Mac and plans to pay for the Apple Developer Program (personal o
 5. Store listing: screenshots, description (EN/FR), a privacy policy page (can live on GitHub Pages: "Lamp collects no data"), support contact; privacy label "Data Not Collected". Use TestFlight with church members first.
 
 Google Play (TWA via PWABuilder, or the same Capacitor project) is the cheaper sibling; it needs a custom domain for Digital Asset Links and 12 testers for 14 days on a new personal account.
+
+## Open decisions
+
+- **Apple account:** personal (shows the owner's legal name as seller) or the church's (needs a free D-U-N-S number; nonprofits can ask for a fee waiver). Turn on automatic renewal: if the membership lapses, all apps leave the store until it is renewed.
+- **Own domain** (e.g. lampbible.app, about 10–15 € a year): not bought yet. Needed for Google Play; best done before printing many church posters, since the QR code points to the current address (`church/make.py` regenerates everything).
+- **Notifications on the website:** only possible with a small server (e.g. a free Cloudflare Worker). The owner asked only out of curiosity; the calendar reminder stays for now. The App Store version gets local notifications instead.
+- **First steps lessons:** suggested that a pastor reads them before they are shared widely; not done yet as far as we know.
+- **Still to try on a real phone:** sharing a verse picture through the share sheet, picking a photo as a background, scanning the printed poster's QR code.
+
+## Work log
+
+Newest last. One line per finished piece of work; say what is unfinished.
+
+- **2026-10-27** Built Lamp as a Claude artifact first: verse for how you feel, full Bible reader (KJV, BSB, WEB, Louis Segond) with search and side-by-side comparison, quiz with levels, timed mode, question of the day and "Who said it?", reading plans, prayer journal, highlights and notes, memorize, cross-references and Easton's dictionary, reading look and fonts, kids mode, backup and restore.
+- **2026-10-27** Made it a standalone installable website: manifest, icons, offline service worker, `build.py`; published on GitHub Pages with a GitHub Actions workflow.
+- **2026-10-27** Bible screens given proper spacing; one verse per line in the reader.
+- **2026-10-27** Added the "Which book?" game, Share buttons and 21 badges.
+- **2026-10-27** Leaving a quiz round asks first and resets it; "Read" from inside a round is a side trip with a floating "Back to the quiz" button.
+- **2026-10-27** Faster updates on phones: the newest page loads when online (3-second limit, then the saved copy), and an "A new version of Lamp is ready" bar appears when an update arrives while Lamp is open.
+- **2026-10-27** Church materials in `church/`: bilingual A4 poster, 16:9 slide, QR code.
+- **2026-10-28** Verse pictures: 12 backgrounds, the user's own photo, 5 fonts, square or story shape. Quiz grown to 247 questions, every answer checked against KJV and Louis Segond.
+- **2026-10-28** "First steps": 8 beginner lessons, a reading guide and 13 key words, in English and French, with a badge.
+- **2026-10-28** Polish pass: one-row verse buttons ("Read"), Find example as a hint, back buttons on Badges and First steps, speech-bubble icon for "Who said it?", Settings → About Lamp (version, privacy, credits), compact quiz page.
+- **2026-10-28** Owner has a Mac and will pay for the Apple Developer Program; App Store plan written above. Added this file and `tools/quiz_text.py`. Next: start the Capacitor iOS version on the Mac.
