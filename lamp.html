@@ -434,11 +434,16 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
 }
 .updatebar span { flex: 1; }
 /* Verse picture maker */
-.picsheet .in { max-width: 460px; max-height: calc(100vh - 32px); overflow-y: auto; gap: 14px; }
+.picsheet .in { max-width: 460px; max-height: calc(100vh - 32px); overflow-y: auto; overflow-x: hidden; gap: 14px; }
 .picsheet .selhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #pic-canvas { display: block; margin: 0 auto; width: auto; height: auto; max-width: 100%; max-height: 46vh; border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
-.pic-themes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.pic-themes button { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
+.pic-themes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.pic-themes button { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
+.pic-themes .photo { display: grid; place-items: center; background: var(--surface) center / cover; color: var(--muted); }
+.pic-fonts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.pic-fonts button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 14px; font-size: 1.05rem; line-height: 1.3; }
+.pic-fonts button[aria-pressed="true"] { border-color: var(--gold); background: var(--gold-soft); }
+.picsheet .eyebrow { text-align: center; margin-bottom: -6px; }
 .pic-themes button[aria-pressed="true"] { outline: 3px solid var(--gold); outline-offset: 2px; }
 .picsheet .seg { align-self: center; }
 .picsheet .bar { justify-content: center; }
@@ -632,7 +637,11 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
 <div class="confirm picsheet" id="picsheet" role="dialog" aria-modal="true" aria-labelledby="pic-title" hidden><div class="in">
   <div class="selhead"><h2 id="pic-title" data-t="pic_title"></h2><button class="btn" type="button" id="pic-close" data-t-label="close">×</button></div>
   <canvas id="pic-canvas" width="1080" height="1080" role="img" data-t-label="pic_preview"></canvas>
-  <div class="pic-themes" id="pic-themes" role="group" data-t-label="pic_style"></div>
+  <div class="eyebrow" data-t="pic_background"></div>
+  <div class="pic-themes" id="pic-themes" role="group" data-t-label="pic_background"></div>
+  <input type="file" id="pic-file" accept="image/*" hidden>
+  <div class="eyebrow" data-t="pic_font"></div>
+  <div class="pic-fonts" id="pic-fonts" role="group" data-t-label="pic_font"></div>
   <div class="seg" id="pic-format" role="group" data-t-label="pic_shape"></div>
   <div class="bar"><button class="btn primary" type="button" id="pic-share" data-t="pic_share"></button><button class="btn" type="button" id="pic-save" data-t="pic_save"></button><button class="btn" type="button" id="pic-text" data-t="pic_text"></button></div>
 </div></div>
@@ -1992,6 +2001,9 @@ const T = {
     pic_title: "Share this verse", pic_preview: "Picture of the verse", pic_style: "Picture style", pic_shape: "Picture shape",
     pic_square: "Square", pic_story: "Story", pic_share: "Share picture", pic_save: "Save picture", pic_text: "Share as text",
     pic_night: "Night", pic_dawn: "Sunrise", pic_parchment: "Parchment", pic_sea: "Sea", pic_meadow: "Meadow", pic_plain: "Plain",
+    pic_forest: "Forest", pic_rose: "Rose", pic_sky: "Sky", pic_sand: "Sand", pic_dusk: "Dusk", pic_stone: "Stone",
+    pic_background: "Background", pic_font: "Font", pic_photo: "Your photo", pic_photo_bad: "That picture couldn't be opened",
+    font_classic: "Classic", font_book: "Book", font_modern: "Modern", font_hand: "Handwritten", font_elegant: "Elegant",
     toast_pic_saved: "Picture saved", close: "Close",
     update_ready: "A new version of Lamp is ready.", update_go: "Refresh", update_later: "Not now",
     leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
@@ -2174,6 +2186,9 @@ const T = {
     pic_title: "Partager ce verset", pic_preview: "Image du verset", pic_style: "Style de l'image", pic_shape: "Format de l'image",
     pic_square: "Carré", pic_story: "Story", pic_share: "Partager l'image", pic_save: "Enregistrer l'image", pic_text: "Partager le texte",
     pic_night: "Nuit", pic_dawn: "Aurore", pic_parchment: "Parchemin", pic_sea: "Mer", pic_meadow: "Prairie", pic_plain: "Simple",
+    pic_forest: "Forêt", pic_rose: "Rose", pic_sky: "Ciel", pic_sand: "Sable", pic_dusk: "Crépuscule", pic_stone: "Pierre",
+    pic_background: "Fond", pic_font: "Police", pic_photo: "Votre photo", pic_photo_bad: "Impossible d'ouvrir cette image",
+    font_classic: "Classique", font_book: "Livre", font_modern: "Moderne", font_hand: "Manuscrite", font_elegant: "Élégante",
     toast_pic_saved: "Image enregistrée", close: "Fermer",
     update_ready: "Une nouvelle version de Lamp est prête.", update_go: "Actualiser", update_later: "Plus tard",
     leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
@@ -2542,6 +2557,7 @@ const ICONS = {
   gear: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
   marker: `<svg viewBox="0 0 24 24"><path d="M14.5 4.5l5 5-8.5 8.5H6v-5z"/><path d="M4 21h16"/></svg>`,
   medal: `<svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="5.5"/><path d="M8.6 10.6L6 3h4l2 5 2-5h4l-2.6 7.6"/><path d="M12 12.6l.8 1.6 1.7.2-1.3 1.2.4 1.7-1.6-.9-1.6.9.4-1.7-1.3-1.2 1.7-.2z"/></svg>`,
+  photo: `<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg>`,
   share: `<svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg>`,
   sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>`,
 };
@@ -3364,8 +3380,20 @@ const countShare = () => store("lamp.shared", load("lamp.shared", 0) + 1);
 const PIC_THEMES = {
   night: { css: "linear-gradient(160deg,#1a2340,#0b0f1c)", text: "#f6f1e6", accent: "#e3b45a", glow: "rgba(227,180,90,.28)",
     paint: (g, w, h) => linear(g, w, h, ["#1a2340", "#0b0f1c"]) },
+  dusk: { css: "linear-gradient(160deg,#4a2a6e,#1a0f2e)", text: "#f3ecff", accent: "#e0c3ff", glow: "rgba(224,195,255,.22)",
+    paint: (g, w, h) => linear(g, w, h, ["#4a2a6e", "#1a0f2e"]) },
+  stone: { css: "linear-gradient(160deg,#3a3a3f,#141416)", text: "#f5f5f5", accent: "#e3b45a", glow: "rgba(227,180,90,.16)",
+    paint: (g, w, h) => linear(g, w, h, ["#3a3a3f", "#141416"]) },
+  forest: { css: "linear-gradient(160deg,#24503a,#0f2419)", text: "#f1efe4", accent: "#cfe0a8", glow: "rgba(207,224,168,.18)",
+    paint: (g, w, h) => linear(g, w, h, ["#24503a", "#0f2419"]) },
   dawn: { css: "linear-gradient(160deg,#fbd38d,#f19a7b,#8b6fa8)", text: "#ffffff", accent: "#fff3d6", glow: "rgba(255,240,200,.35)", shadow: "rgba(90,40,60,.35)",
     paint: (g, w, h) => linear(g, w, h, ["#fbd38d", "#f19a7b", "#8b6fa8"]) },
+  sand: { css: "linear-gradient(160deg,#f6e3bf,#d9a86a)", text: "#3b2410", accent: "#7a4a14", glow: "rgba(255,248,230,.55)",
+    paint: (g, w, h) => linear(g, w, h, ["#f6e3bf", "#d9a86a"]) },
+  rose: { css: "linear-gradient(160deg,#fbe3e4,#eab0bf)", text: "#4a1f2b", accent: "#9c3d55", glow: "rgba(255,255,255,.55)",
+    paint: (g, w, h) => linear(g, w, h, ["#fbe3e4", "#eab0bf"]) },
+  sky: { css: "linear-gradient(160deg,#dcefff,#8ec3ea)", text: "#0f2a44", accent: "#1f5288", glow: "rgba(255,255,255,.5)",
+    paint: (g, w, h) => linear(g, w, h, ["#dcefff", "#8ec3ea"]) },
   parchment: { css: "radial-gradient(circle,#f8efdc,#e9d9b6)", text: "#3a2d1e", accent: "#96630f", glow: "rgba(255,250,235,.7)",
     paint: (g, w, h) => radial(g, w, h, "#f8efdc", "#e6d4ad") },
   sea: { css: "linear-gradient(160deg,#0d3b4f,#1f6f78,#5fa39b)", text: "#ffffff", accent: "#cfeee6", glow: "rgba(207,238,230,.22)", shadow: "rgba(0,30,40,.3)",
@@ -3374,7 +3402,37 @@ const PIC_THEMES = {
     paint: (g, w, h) => linear(g, w, h, ["#eef3e2", "#b7cf9a"]) },
   plain: { css: "#ffffff", text: "#1a2034", accent: "#a8741c", glow: "rgba(214,160,60,.12)",
     paint: (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); } },
+  // The reader's own picture, darkened a little so white words stay readable. It never leaves the phone.
+  photo: { text: "#ffffff", accent: "#f3cf83", glow: "rgba(0,0,0,0)", shadow: "rgba(0,0,0,.55)", paint: paintPhoto },
 };
+function paintPhoto(g, w, h) {
+  const img = pic.photo;
+  if (!img) { g.fillStyle = "#222"; g.fillRect(0, 0, w, h); return; }
+  const k = Math.max(w / img.naturalWidth, h / img.naturalHeight), iw = img.naturalWidth * k, ih = img.naturalHeight * k;
+  g.drawImage(img, (w - iw) / 2, (h - ih) / 2, iw, ih);  // fill the frame, cropping the overflow
+  const shade = g.createLinearGradient(0, 0, 0, h);
+  shade.addColorStop(0, "rgba(0,0,0,.32)"); shade.addColorStop(.5, "rgba(0,0,0,.48)"); shade.addColorStop(1, "rgba(0,0,0,.6)");
+  g.fillStyle = shade; g.fillRect(0, 0, w, h);
+}
+// Fonts for the verse. `scale` evens out how big each looks at the same size; Handwritten and Elegant load only when the picture maker opens.
+const PIC_FONTS = {
+  classic: { family: '"Cormorant Garamond", Georgia, serif', style: "italic", weight: 500, scale: 1, lh: 1.3 },
+  book: { family: '"Literata", Georgia, serif', style: "normal", weight: 400, scale: .78, lh: 1.45 },
+  modern: { family: '"Figtree", system-ui, sans-serif', style: "normal", weight: 500, scale: .76, lh: 1.4 },
+  hand: { family: '"Caveat", cursive', style: "normal", weight: 500, scale: 1.12, lh: 1.2 },
+  elegant: { family: '"Playfair Display", Georgia, serif', style: "italic", weight: 500, scale: .8, lh: 1.38 },
+};
+const fontCss = (f, px) => `${f.style} ${f.weight} ${px}px ${f.family}`;
+let picFontsReady = null;
+function loadPicFonts() {
+  return picFontsReady ??= new Promise(done => {
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Playfair+Display:ital,wght@1,500&display=swap";
+    l.onload = l.onerror = done;
+    document.head.append(l);
+  });
+}
 function linear(g, w, h, stops) {
   const grad = g.createLinearGradient(0, 0, w * .45, h);
   stops.forEach((c, i) => grad.addColorStop(i / (stops.length - 1), c));
@@ -3398,13 +3456,21 @@ function wrapLines(g, text, max) {
 }
 const LAMP_PATHS = ["M3.5 12.5h13.5a3 3 0 0 0 3-3h1.5", "M4.5 12.5c.4 3 3.6 5 7.5 5s7.1-2 7.5-5", "M9 21h6M12 17.5V21"];
 const LAMP_FLAME = "M12 2.5c1.5 2 2.6 3.1 2.6 4.7a2.6 2.6 0 0 1-5.2 0c0-1.6 1.1-2.7 2.6-4.7z";
-let pic = Object.assign({ theme: "night", format: "square" }, load("lamp.pic", {}), { x: null });
+let pic = Object.assign({ theme: "night", format: "square", font: "classic" }, load("lamp.pic", {}), { x: null, photo: null, photoUrl: null });
+let picRun = 0;  // the latest drawing wins when choices change quickly
 
 async function drawPicture() {
-  const c = $("#pic-canvas"), g = c.getContext("2d"), th = PIC_THEMES[pic.theme] || PIC_THEMES.night, x = pic.x;
+  const run = ++picRun, x = pic.x;
+  const th = (pic.theme === "photo" && !pic.photo ? null : PIC_THEMES[pic.theme]) || PIC_THEMES.night;
+  const f = PIC_FONTS[pic.font] || PIC_FONTS.classic;
+  try {
+    if (f === PIC_FONTS.hand || f === PIC_FONTS.elegant) await loadPicFonts();
+    await Promise.all([fontCss(f, 60), '600 60px "Cormorant Garamond"', '700 30px "Figtree"'].map(s => document.fonts.load(s)));
+  } catch {}
+  if (run !== picRun) return;
+  const c = $("#pic-canvas"), g = c.getContext("2d");
   const W = 1080, H = pic.format === "story" ? 1920 : 1080, story = H > W;
   c.width = W; c.height = H;
-  try { await Promise.all(['italic 500 60px "Cormorant Garamond"', '600 60px "Cormorant Garamond"', '700 30px "Figtree"'].map(f => document.fonts.load(f))); } catch {}
   th.paint(g, W, H);
   // A soft glow behind the words, like lamplight.
   const glow = g.createRadialGradient(W / 2, H * .42, 0, W / 2, H * .42, W * .62);
@@ -3414,11 +3480,11 @@ async function drawPicture() {
   // The verse, as large as fits in its box.
   const pad = story ? 110 : 100, maxW = W - pad * 2, maxH = story ? 1060 : 600;
   const quoted = t("quote", x.text);
-  let size = story ? 82 : 74, lines, lh;
+  let size = Math.round((story ? 82 : 74) * f.scale), lines, lh;
   for (;; size -= 2) {
-    g.font = `italic 500 ${size}px "Cormorant Garamond", Georgia, serif`;
-    lines = wrapLines(g, quoted, maxW); lh = size * 1.3;
-    if (lines.length * lh <= maxH || size <= 30) break;
+    g.font = fontCss(f, size);
+    lines = wrapLines(g, quoted, maxW); lh = size * f.lh;
+    if (lines.length * lh <= maxH || size <= 30 * f.scale) break;
   }
   const refSize = story ? 34 : 30, gap = story ? 56 : 44;
   const blockH = lines.length * lh + gap + refSize;
@@ -3460,13 +3526,17 @@ function canShareFiles() {
   try { return !!(navigator.canShare && navigator.canShare({ files: [new File([""], "x.png", { type: "image/png" })] })); } catch { return false; }
 }
 function renderPicControls() {
-  $("#pic-themes").innerHTML = Object.entries(PIC_THEMES).map(([k, th]) =>
-    `<button type="button" data-pic-theme="${k}" style="background:${th.css}" aria-label="${esc(t("pic_" + k))}" aria-pressed="${pic.theme === k}"></button>`).join("");
+  $("#pic-themes").innerHTML = Object.entries(PIC_THEMES).filter(([k]) => k !== "photo").map(([k, th]) =>
+    `<button type="button" data-pic-theme="${k}" style="background:${th.css}" aria-label="${esc(t("pic_" + k))}" aria-pressed="${pic.theme === k}"></button>`).join("")
+    + `<button type="button" class="photo" id="pic-photo" aria-label="${esc(t("pic_photo"))}" aria-pressed="${pic.theme === "photo" && !!pic.photo}"${pic.photoUrl ? ` style="background-image:url(${pic.photoUrl})"` : ""}>${pic.photoUrl ? "" : `<span class="ic">${ICONS.photo}</span>`}</button>`;
+  $("#pic-fonts").innerHTML = Object.entries(PIC_FONTS).map(([k, f]) =>
+    `<button type="button" data-pic-font="${k}" aria-pressed="${pic.font === k}" style="font-family:${esc(f.family)};font-style:${f.style};font-weight:${f.weight}${k === "hand" ? ";font-size:1.3rem" : ""}">${t("font_" + k)}</button>`).join("");
   $("#pic-format").innerHTML = ["square", "story"].map(f =>
     `<button type="button" data-pic-format="${f}" aria-pressed="${pic.format === f}">${t("pic_" + f)}</button>`).join("");
 }
 function openPicture(x) {
   pic.x = x;
+  loadPicFonts();
   renderPicControls();
   $("#pic-share").hidden = !canShareFiles();
   $("#picsheet").hidden = false;
@@ -3476,10 +3546,17 @@ function openPicture(x) {
 const closePicture = () => { $("#picsheet").hidden = true; };
 $("#picsheet").addEventListener("click", async e => {
   if (e.target.id === "picsheet" || e.target.closest("#pic-close")) { closePicture(); return; }
-  const th = e.target.closest("[data-pic-theme]"), fm = e.target.closest("[data-pic-format]");
-  if (th || fm) {
-    if (th) pic.theme = th.dataset.picTheme; else pic.format = fm.dataset.picFormat;
-    store("lamp.pic", { theme: pic.theme, format: pic.format });
+  // Your photo: the first tap picks one; once it's chosen, tapping again picks another.
+  if (e.target.closest("#pic-photo")) {
+    if (pic.photo && pic.theme !== "photo") { pic.theme = "photo"; renderPicControls(); drawPicture(); }
+    else $("#pic-file").click();
+    return;
+  }
+  const th = e.target.closest("[data-pic-theme]"), fm = e.target.closest("[data-pic-format]"), fo = e.target.closest("[data-pic-font]");
+  if (th || fm || fo) {
+    if (th) pic.theme = th.dataset.picTheme; else if (fm) pic.format = fm.dataset.picFormat; else pic.font = fo.dataset.picFont;
+    // The photo isn't kept between visits, so a photo background isn't remembered either.
+    store("lamp.pic", { theme: pic.theme === "photo" ? load("lamp.pic", {}).theme : pic.theme, format: pic.format, font: pic.font });
     renderPicControls(); drawPicture();
     return;
   }
@@ -3500,6 +3577,19 @@ $("#picsheet").addEventListener("click", async e => {
   }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#picsheet").hidden) closePicture(); });
+$("#pic-file").addEventListener("change", e => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => {
+    if (pic.photoUrl) URL.revokeObjectURL(pic.photoUrl);
+    Object.assign(pic, { photo: img, photoUrl: url, theme: "photo" });
+    renderPicControls(); drawPicture();
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); toast(t("pic_photo_bad")); };
+  img.src = url;
+});
 
 // ---------- Badges ----------
 // Earned from what's already kept on this device; lamp.badges remembers when each was earned: { id: ms }.
