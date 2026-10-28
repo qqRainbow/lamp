@@ -8,7 +8,7 @@ APP = len(sys.argv) > 1 and sys.argv[1] == "app"
 SITE = ROOT / "app" / "www" if APP else ROOT / "site"
 DATA = ["kjv.json", "bsb.json", "web.json", "lsg.json", "xref.json", "easton.json"]
 # The contact shown on privacy.html (Apple's privacy policy and support page). While empty, that section is left out.
-CONTACT_EMAIL = ""
+CONTACT_EMAIL = "maxdeveh@gmail.com"
 ICONS = ["icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png"]
 
 def write_unix(path, text):
