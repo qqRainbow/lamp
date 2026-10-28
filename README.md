@@ -13,6 +13,9 @@ Lamp is an installable web app (a PWA). Once someone opens it in their phone's b
 | `build.py` | Puts everything together into `site/`. |
 | `site/` | The finished website, built by `build.py`. It isn't stored in Git, because GitHub builds its own copy. |
 | `.github/workflows/pages.yml` | Tells GitHub to build and publish Lamp on every push. |
+| `tools/quiz_text.py` | Rebuilds the verse shown after each quiz answer, after adding questions. |
+| `church/` | Poster, slide and QR code for church (`py church/make.py`). |
+| `CLAUDE.md` | Notes that let a new Claude session (on any computer) pick up the project. |
 
 ## Publishing changes (GitHub Pages)
 
