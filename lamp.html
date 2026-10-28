@@ -210,6 +210,24 @@ textarea:focus { outline: none; border-color: var(--gold); }
 .tile b { font-size: .98rem; line-height: 1.25; }
 .tile small { color: var(--muted); font-size: .82rem; line-height: 1.3; overflow-wrap: anywhere; }
 .tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+/* First steps: numbered lessons, ticked when done */
+.lessons { display: flex; flex-direction: column; gap: 10px; }
+.lesson {
+  display: flex; align-items: center; gap: 14px; text-align: left; width: 100%;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; color: var(--ink);
+}
+.lesson:hover { border-color: var(--gold); }
+.lesson .num { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--gold-soft); color: var(--gold); font-weight: 700; }
+.lesson.done .num { background: var(--good); color: var(--surface); }
+.lesson span:last-child { display: grid; gap: 2px; }
+.lesson b { font-family: var(--font-verse); font-size: 1.25rem; font-weight: 600; line-height: 1.2; }
+.lesson small { color: var(--muted); font-size: .85rem; }
+.lesson-p { margin: 0; font-size: 1.02rem; line-height: 1.6; }
+.lesson-pray em { font-family: var(--font-read); font-size: 1.15rem; line-height: 1.45; }
+.words { display: flex; flex-direction: column; gap: 8px; }
+.word { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+.word summary { font-weight: 700; cursor: pointer; }
+.word p { margin: 8px 0 10px; line-height: 1.5; }
 /* Badges: earned ones glow gold, the rest wait in grey */
 .badges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .badge {
@@ -546,6 +564,9 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
 
   <!-- MEMORIZE (opened from its tile on Today) -->
   <section class="screen" id="s-memo" hidden></section>
+
+  <!-- FIRST STEPS -->
+  <section class="screen" id="s-start" hidden></section>
 
   <!-- BADGES -->
   <section class="screen" id="s-badges" hidden></section>
@@ -2005,6 +2026,16 @@ const T = {
     pic_background: "Background", pic_font: "Font", pic_photo: "Your photo", pic_photo_bad: "That picture couldn't be opened",
     font_classic: "Classic", font_book: "Book", font_modern: "Modern", font_hand: "Handwritten", font_elegant: "Elegant",
     toast_pic_saved: "Picture saved", close: "Close",
+    start_eyebrow: "New to faith? Start here", start_title: "First steps",
+    start_intro: "New to Christianity, or coming back to it? These eight short lessons walk through the heart of the Christian faith, one step at a time, with the Bible verses behind each one.",
+    start_progress: (n, total) => n ? `${n} of ${total} lessons done` : `${total} short lessons`,
+    start_lesson_of: (i, n) => `Lesson ${i} of ${n}`, start_all: "‹ All lessons", start_verses: "Key verses",
+    start_think: "Think about it", start_pray: "A prayer you can pray", start_read: ch => `Read ${ch}`,
+    start_mark_done: "Mark as done", start_done_label: "Done", start_next: "Next lesson ›", start_toast: "Lesson done",
+    start_where: "Where to start reading",
+    start_where_text: "A good place to begin is one of the Gospels, the books about Jesus' life. Mark is the shortest and moves quickly; John goes deep into who Jesus is. Read a chapter a day, or follow a reading plan.",
+    start_mark: "Start Mark", start_john: "Start John", start_words: "Words you'll hear",
+    start_church: "Faith grows best with others. Bring your questions to a pastor or a Christian friend: no question is too simple.",
     update_ready: "A new version of Lamp is ready.", update_go: "Refresh", update_later: "Not now",
     leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
     back_to_quiz: (i, n) => `‹ Back to the quiz · question ${i} of ${n}`, back_to_game: (i, n) => `‹ Back to the game · question ${i} of ${n}`,
@@ -2190,6 +2221,16 @@ const T = {
     pic_background: "Fond", pic_font: "Police", pic_photo: "Votre photo", pic_photo_bad: "Impossible d'ouvrir cette image",
     font_classic: "Classique", font_book: "Livre", font_modern: "Moderne", font_hand: "Manuscrite", font_elegant: "Élégante",
     toast_pic_saved: "Image enregistrée", close: "Fermer",
+    start_eyebrow: `Nouveau dans la foi ? Commencez ici`, start_title: "Premiers pas",
+    start_intro: "Vous découvrez le christianisme, ou vous y revenez ? Ces huit courtes leçons parcourent le cœur de la foi chrétienne, pas à pas, avec les versets bibliques sur lesquels chacune s'appuie.",
+    start_progress: (n, total) => n ? `${n} leçon${n > 1 ? "s" : ""} sur ${total} terminée${n > 1 ? "s" : ""}` : `${total} courtes leçons`,
+    start_lesson_of: (i, n) => `Leçon ${i} sur ${n}`, start_all: "‹ Toutes les leçons", start_verses: "Versets clés",
+    start_think: "Pour réfléchir", start_pray: "Une prière que vous pouvez faire", start_read: ch => `Lire ${ch}`,
+    start_mark_done: "Marquer comme terminée", start_done_label: "Terminée", start_next: "Leçon suivante ›", start_toast: "Leçon terminée",
+    start_where: "Par où commencer la lecture",
+    start_where_text: "Un bon point de départ est l'un des Évangiles, les livres sur la vie de Jésus. Marc est le plus court et va droit au but ; Jean approfondit qui est Jésus. Lisez un chapitre par jour, ou suivez un plan de lecture.",
+    start_mark: "Commencer Marc", start_john: "Commencer Jean", start_words: "Les mots à connaître",
+    start_church: "La foi grandit mieux avec d'autres. Posez vos questions à un pasteur ou à un ami chrétien : aucune question n'est trop simple.",
     update_ready: "Une nouvelle version de Lamp est prête.", update_go: "Actualiser", update_later: "Plus tard",
     leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
     back_to_quiz: (i, n) => `‹ Retour au quiz · question ${i} sur ${n}`, back_to_game: (i, n) => `‹ Retour au jeu · question ${i} sur ${n}`,
@@ -2369,7 +2410,7 @@ document.addEventListener("click", e => {
 });
 
 // ---------- Tabs ----------
-const TABS = ["today","find","bible","quiz","saved","settings","memo","badges"];
+const TABS = ["today","find","bible","quiz","saved","settings","memo","badges","start"];
 function show(tab, leaving = false) {
   // Leaving a quiz or game: a round in progress asks first; either way the quiz starts fresh next time.
   // Reading an answer's chapter is a side trip to the Bible, and the round waits for the reader to come back.
@@ -2391,6 +2432,7 @@ function show(tab, leaving = false) {
   if (tab === "quiz" && quiz && quiz.trip) { scrollTo(0, quiz.trip.y); quiz.trip = null; }  // back from reading, to the same spot
   if (tab === "bible") drawBible();
   if (tab === "badges") renderBadges();
+  if (tab === "start") renderStart();
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.tab)));
 
@@ -2525,13 +2567,18 @@ function renderToday() {
   const last = load("lamp.lastread", null), open = prayers.filter(p => !p.answered).length;
   const tile = (attrs, icon, title, sub) =>
     `<button class="tile" ${attrs}><span class="ic">${ICONS[icon]}</span><span><b>${title}</b><small>${sub}</small></span></button>`;
+  // First steps sits at the top of the shortcuts until all its lessons are done, then moves down beside Badges.
+  const stepsDone = START_LESSONS.filter(l => startDone()[l.id]).length, stepsLeft = stepsDone < START_LESSONS.length;
+  const steps = tile('data-go="start"', "lamp", t("start_title"), t("start_progress", stepsDone, START_LESSONS.length)).replace('class="tile"', 'class="tile wide"');
   $("#tiles").innerHTML = [
+    stepsLeft ? steps : "",
     tile('data-go="find"', "search", t("tile_find"), t("tile_find_sub")),
     tile('data-tile="read"', "book", t("tile_read"), last ? t("tile_continue", chapterName(last.b, last.c)) : t("tile_read_sub")),
     tile("data-go-plans", "plan", t("plans_title"), t("tile_plans_sub", active.length)),
     tile('data-go="quiz"', "quiz", t("tile_quiz"), dailyDone() ? t("tile_quiz_sub", best, QUIZ.length) : t("tile_quiz_daily")),
     tile('data-tile="pray"', "heart", t("tile_pray"), t("tile_pray_sub", open, prayers.length - open)),
     tile('data-go="memo"', "brain", t("memo_title"), t("tile_memo_sub", memory.length, memory.filter(m => m.learned).length)),
+    stepsLeft ? "" : steps,
     tile('data-go="badges"', "medal", t("badges_title"), t("badges_count", badgesEarned(), BADGES.length)).replace('class="tile"', 'class="tile wide"'),
   ].join("");
 }
@@ -3591,6 +3638,226 @@ $("#pic-file").addEventListener("change", e => {
   img.src = url;
 });
 
+// ---------- First steps: a beginner's path into the Christian faith ----------
+// Eight short lessons on what Christians everywhere share; where churches differ (baptism, communion) the text points to the reader's church.
+const START_LESSONS = [
+  { id: "loved", read: "Genesis 1", verses: ["Genesis 1:27", "Jeremiah 31:3", "1 John 4:16"],
+    en: { title: "God made you and loves you", sum: "Where the story begins",
+      body: ["The Bible begins with God creating the world and calling it good. People are the high point of that story: made in God's own image, able to know him and to love.",
+        "That means you are not an accident. Before you did anything right or wrong, you were known and loved by the God who made you."],
+      think: "What would change in your day if you really believed that God loves you?",
+      pray: "God, thank you for making me and loving me. Help me to know you better. Amen." },
+    fr: { title: "Dieu vous a créé et vous aime", sum: "Là où l'histoire commence",
+      body: ["La Bible commence par Dieu qui crée le monde et le trouve bon. Les êtres humains sont le sommet de ce récit : créés à l'image de Dieu, capables de le connaître et d'aimer.",
+        "Vous n'êtes donc pas un hasard. Avant même d'avoir fait le bien ou le mal, vous étiez connu et aimé du Dieu qui vous a créé."],
+      think: "Qu'est-ce qui changerait dans votre journée si vous croyiez vraiment que Dieu vous aime ?",
+      pray: "Dieu, merci de m'avoir créé et de m'aimer. Aide-moi à mieux te connaître. Amen." } },
+  { id: "broken", read: "Genesis 3", verses: ["Romans 3:23", "Isaiah 53:6", "Romans 6:23"],
+    en: { title: "What went wrong", sum: "Why the world feels broken",
+      body: ["Something is broken in the world, and in us. The Bible calls it sin: turning away from God and going our own way, in what we think, say and do.",
+        "Sin isn't only about bad deeds. It breaks our relationship with God and with each other, and no one can fix it alone.",
+        "But the story doesn't end there. The same verse that speaks of death also speaks of a gift."],
+      think: "Where do you see the effects of this brokenness, in the world or in your own life?",
+      pray: "God, I admit that I have gone my own way. Thank you that you have not given up on me. Amen." },
+    fr: { title: "Ce qui s'est brisé", sum: "Pourquoi le monde semble cassé",
+      body: ["Quelque chose est brisé dans le monde, et en nous. La Bible appelle cela le péché : se détourner de Dieu pour suivre son propre chemin, dans nos pensées, nos paroles et nos actes.",
+        "Le péché ne se limite pas aux mauvaises actions. Il brise notre relation avec Dieu et avec les autres, et personne ne peut le réparer seul.",
+        "Mais l'histoire ne s'arrête pas là. Le verset qui parle de la mort parle aussi d'un don."],
+      think: "Où voyez-vous les effets de cette cassure, dans le monde ou dans votre propre vie ?",
+      pray: "Dieu, je reconnais que j'ai suivi mon propre chemin. Merci de ne pas m'avoir abandonné. Amen." } },
+  { id: "jesus", read: "John 1", verses: ["John 1:14", "John 14:6", "Colossians 1:15"],
+    en: { title: "Who is Jesus?", sum: "God with us",
+      body: ["Jesus lived in Israel about two thousand years ago. He taught, healed the sick, welcomed outsiders and forgave sins, something only God can do.",
+        "Christians believe that Jesus is God come to us as a human being: fully God and fully human. If you want to know what God is like, look at Jesus."],
+      think: "What surprises you most about the way Jesus treated people?",
+      pray: "Jesus, I want to know who you really are. Show yourself to me as I read about you. Amen." },
+    fr: { title: "Qui est Jésus ?", sum: "Dieu avec nous",
+      body: ["Jésus a vécu en Israël il y a environ deux mille ans. Il a enseigné, guéri les malades, accueilli les exclus et pardonné les péchés, ce que Dieu seul peut faire.",
+        "Les chrétiens croient que Jésus est Dieu venu vers nous en devenant homme : pleinement Dieu et pleinement homme. Pour savoir à quoi Dieu ressemble, regardez Jésus."],
+      think: "Qu'est-ce qui vous surprend le plus dans la manière dont Jésus traitait les gens ?",
+      pray: "Jésus, je veux savoir qui tu es vraiment. Montre-toi à moi pendant que je lis à ton sujet. Amen." } },
+  { id: "cross", read: "Luke 24", verses: ["Romans 5:8", "1 Corinthians 15:3-4", "1 Peter 3:18"],
+    en: { title: "The cross and the empty tomb", sum: "The heart of the good news",
+      body: ["Jesus was arrested, condemned and crucified, though he had done nothing wrong. Christians believe he died in our place, taking on himself the sin that separated us from God.",
+        "Three days later, his tomb was empty. Jesus rose from the dead and was seen by many witnesses. His resurrection shows that sin and death don't have the last word."],
+      think: "Why do you think Jesus was willing to die for people who didn't deserve it?",
+      pray: "Jesus, thank you for dying for me and for rising again. Amen." },
+    fr: { title: "La croix et le tombeau vide", sum: "Le cœur de la bonne nouvelle",
+      body: ["Jésus a été arrêté, condamné et crucifié, alors qu'il n'avait rien fait de mal. Les chrétiens croient qu'il est mort à notre place, en prenant sur lui le péché qui nous séparait de Dieu.",
+        "Trois jours plus tard, son tombeau était vide. Jésus est ressuscité et a été vu par de nombreux témoins. Sa résurrection montre que le péché et la mort n'ont pas le dernier mot."],
+      think: "Pourquoi, selon vous, Jésus a-t-il accepté de mourir pour des gens qui ne le méritaient pas ?",
+      pray: "Jésus, merci d'être mort pour moi et d'être ressuscité. Amen." } },
+  { id: "yes", read: "John 3", verses: ["Ephesians 2:8-9", "Romans 10:9", "2 Corinthians 5:17"],
+    en: { title: "Saying yes to Jesus", sum: "A gift to receive",
+      body: ["God's forgiveness isn't earned; it's a gift, received by faith. That means trusting Jesus, turning away from going your own way (the Bible calls this repentance), and following him.",
+        "There is no special formula. You can talk to God honestly, in your own words. Many churches also mark this new beginning with baptism; your church can tell you more."],
+      think: "Is anything holding you back from trusting Jesus?",
+      pray: "Jesus, I believe that you died for me and rose again. I'm sorry for going my own way. I want to trust you and follow you. Please forgive me and make me new. Amen." },
+    fr: { title: "Dire oui à Jésus", sum: "Un cadeau à recevoir",
+      body: ["Le pardon de Dieu ne se mérite pas : c'est un cadeau, reçu par la foi. Cela veut dire faire confiance à Jésus, renoncer à suivre son propre chemin (la Bible appelle cela la repentance) et le suivre.",
+        "Il n'y a pas de formule spéciale. Vous pouvez parler à Dieu sincèrement, avec vos propres mots. Beaucoup d'Églises marquent aussi ce nouveau départ par le baptême ; votre Église pourra vous en dire plus."],
+      think: "Y a-t-il quelque chose qui vous retient de faire confiance à Jésus ?",
+      pray: "Jésus, je crois que tu es mort pour moi et que tu es ressuscité. Pardon d'avoir suivi mon propre chemin. Je veux te faire confiance et te suivre. Pardonne-moi et renouvelle-moi. Amen." } },
+  { id: "prayer", read: "Matthew 6", verses: ["Matthew 6:9-13", "Philippians 4:6", "1 John 1:9"],
+    en: { title: "Talking with God", sum: "Prayer, simply",
+      body: ["Prayer is simply talking with God. You don't need special words, or to be in a church. You can pray anywhere, out loud or silently, about anything.",
+        "Jesus gave his friends a prayer to show them how: praising God, asking for what we need, asking forgiveness and forgiving others. Lamp's prayer journal can help you remember what you pray for, and how God answers."],
+      think: "What would you like to say to God today?",
+      pray: "God, teach me to pray, and help me to talk with you every day. Amen." },
+    fr: { title: "Parler avec Dieu", sum: "La prière, tout simplement",
+      body: ["Prier, c'est simplement parler avec Dieu. Pas besoin de mots spéciaux, ni d'être dans une église. Vous pouvez prier partout, à voix haute ou en silence, à propos de tout.",
+        "Jésus a donné une prière à ses amis pour leur montrer comment faire : louer Dieu, lui demander ce dont nous avons besoin, demander pardon et pardonner aux autres. Le journal de prière de Lamp peut vous aider à garder trace de vos prières et des réponses de Dieu."],
+      think: "Qu'aimeriez-vous dire à Dieu aujourd'hui ?",
+      pray: "Dieu, apprends-moi à prier, et aide-moi à parler avec toi chaque jour. Amen." } },
+  { id: "bible", read: "Mark 1", verses: ["2 Timothy 3:16", "Psalms 119:105", "Hebrews 4:12"],
+    en: { title: "Reading the Bible", sum: "Where God speaks",
+      body: ["The Bible is a library of 66 books written over many centuries, telling one big story: God's love for the world, fulfilled in Jesus. Christians believe God speaks through it.",
+        "You don't have to start at page one. A good first step is a Gospel, like Mark or John, a little each day. Read slowly, ask what it says about God and about you, and don't worry about understanding everything at once."],
+      think: "When could you take ten quiet minutes a day to read?",
+      pray: "God, speak to me as I read your word, and help me to live it. Amen." },
+    fr: { title: "Lire la Bible", sum: "Là où Dieu parle",
+      body: ["La Bible est une bibliothèque de 66 livres écrits au fil de nombreux siècles, qui racontent une seule grande histoire : l'amour de Dieu pour le monde, accompli en Jésus. Les chrétiens croient que Dieu parle à travers elle.",
+        "Pas besoin de commencer à la première page. Un bon premier pas est un Évangile, comme Marc ou Jean, un peu chaque jour. Lisez lentement, demandez-vous ce que le texte dit de Dieu et de vous, et ne vous inquiétez pas de tout comprendre d'un coup."],
+      think: "À quel moment pourriez-vous prendre dix minutes de calme chaque jour pour lire ?",
+      pray: "Dieu, parle-moi quand je lis ta parole, et aide-moi à la vivre. Amen." } },
+  { id: "together", read: "Acts 2", verses: ["John 14:26", "Acts 2:42", "Hebrews 10:24-25"],
+    en: { title: "You're not alone", sum: "The Holy Spirit and the church",
+      body: ["Jesus promised his followers the Holy Spirit: God present with them, helping, comforting and changing them from the inside.",
+        "He also gave them each other. The first Christians met together to learn, share meals, pray and help one another. Following Jesus is meant to be lived with others, so find a church where you can ask your questions and grow."],
+      think: "Who could you talk to about your questions about faith?",
+      pray: "Holy Spirit, be with me and help me. Lead me to people who can help me grow. Amen." },
+    fr: { title: "Vous n'êtes pas seul", sum: "Le Saint-Esprit et l'Église",
+      body: ["Jésus a promis le Saint-Esprit à ceux qui le suivent : Dieu présent avec eux, qui les aide, les console et les transforme de l'intérieur.",
+        "Il leur a aussi donné les uns aux autres. Les premiers chrétiens se réunissaient pour apprendre, partager des repas, prier et s'entraider. Suivre Jésus se vit avec d'autres : trouvez une Église où vous pourrez poser vos questions et grandir."],
+      think: "À qui pourriez-vous parler de vos questions sur la foi ?",
+      pray: "Saint-Esprit, sois avec moi et aide-moi. Conduis-moi vers des personnes qui m'aideront à grandir. Amen." } },
+];
+// Words new readers often hear, in plain language, each with a verse to read.
+const START_WORDS = [
+  { at: "Mark 1:1", en: ["Gospel", "“Good news”: the message that God saves us through Jesus. The four books about Jesus' life (Matthew, Mark, Luke and John) are also called the Gospels."],
+    fr: ["Évangile", "« Bonne nouvelle » : le message que Dieu nous sauve par Jésus. Les quatre livres sur la vie de Jésus (Matthieu, Marc, Luc et Jean) s'appellent aussi les Évangiles."] },
+  { at: "Ephesians 2:8", en: ["Grace", "God's undeserved kindness: love and forgiveness we receive as a gift, not as a reward."],
+    fr: ["Grâce", "La bonté de Dieu que nous ne méritons pas : un amour et un pardon reçus comme un cadeau, pas comme une récompense."] },
+  { at: "Romans 3:23", en: ["Sin", "Anything that turns us away from God and his ways, in thought, word or action."],
+    fr: ["Péché", "Tout ce qui nous détourne de Dieu et de ses chemins, en pensée, en parole ou en action."] },
+  { at: "Acts 3:19", en: ["Repentance", "Turning around: being sorry for sin, and changing direction to follow God."],
+    fr: ["Repentance", "Faire demi-tour : regretter son péché et changer de direction pour suivre Dieu."] },
+  { at: "Hebrews 11:1", en: ["Faith", "Trusting God and what he has promised, even when we can't see everything."],
+    fr: ["Foi", "Faire confiance à Dieu et à ses promesses, même quand on ne voit pas tout."] },
+  { at: "John 3:17", en: ["Salvation", "Being rescued by God from sin and its consequences, and brought into a new life with him that lasts forever."],
+    fr: ["Salut", "Être délivré par Dieu du péché et de ses conséquences, pour entrer dans une vie nouvelle avec lui, pour toujours."] },
+  { at: "Matthew 28:19", en: ["Trinity", "One God in three persons: the Father, the Son (Jesus) and the Holy Spirit. The word isn't in the Bible, but the idea is."],
+    fr: ["Trinité", "Un seul Dieu en trois personnes : le Père, le Fils (Jésus) et le Saint-Esprit. Le mot n'est pas dans la Bible, mais l'idée, si."] },
+  { at: "John 14:26", en: ["Holy Spirit", "God present with and within believers, who comforts, guides and gives strength."],
+    fr: ["Saint-Esprit", "Dieu présent avec les croyants et en eux, qui console, guide et donne la force."] },
+  { at: "1 Corinthians 12:27", en: ["Church", "Not first a building, but the people who follow Jesus, gathered to worship, learn and serve together."],
+    fr: ["Église", "Pas d'abord un bâtiment, mais les personnes qui suivent Jésus, réunies pour adorer Dieu, apprendre et servir ensemble."] },
+  { at: "Philippians 4:6", en: ["Prayer", "Talking with God and listening to him, alone or with others."],
+    fr: ["Prière", "Parler avec Dieu et l'écouter, seul ou avec d'autres."] },
+  { at: "Romans 6:4", en: ["Baptism", "A sign, with water, of new life in Jesus, which he asked his followers to receive. Churches practise it in different ways; your church can tell you more."],
+    fr: ["Baptême", "Un signe, avec de l'eau, de la vie nouvelle en Jésus, qu'il a demandé à ses disciples de recevoir. Les Églises le pratiquent de différentes manières ; votre Église pourra vous en dire plus."] },
+  { at: "Luke 22:19", en: ["Communion", "A shared meal of bread and wine (or juice) remembering Jesus' death, as he asked. Also called the Lord's Supper or the Eucharist."],
+    fr: ["Communion", "Un repas partagé de pain et de vin (ou de jus de raisin) en souvenir de la mort de Jésus, comme il l'a demandé. On l'appelle aussi la sainte cène ou l'eucharistie."] },
+  { at: "2 Corinthians 1:20", en: ["Amen", "“So be it” or “truly”: said at the end of a prayer to agree with it."],
+    fr: ["Amen", "« Ainsi soit-il » ou « c'est vrai » : se dit à la fin d'une prière pour s'y associer."] },
+];
+// The lesson and word-list verses in every version (made by the build script from the Bible files).
+const START_TEXT = {
+  "1 Corinthians 12:27": {"kjv": "Now ye are the body of Christ, and members in particular.", "bsb": "Now you are the body of Christ, and each of you is a member of it.", "web": "Now you are the body of Christ, and members individually.", "lsg": "Vous êtes le corps de Christ, et vous êtes ses membres, chacun pour sa part.", "lsgRef": "1 Corinthiens 12:27"},
+  "1 Corinthians 15:3-4": {"kjv": "For I delivered unto you first of all that which I also received, how that Christ died for our sins according to the scriptures; And that he was buried, and that he rose again the third day according to the scriptures:", "bsb": "For what I received I passed on to you as of first importance: that Christ died for our sins according to the Scriptures, that He was buried, that He was raised on the third day according to the Scriptures,", "web": "For I delivered to you first of all that which I also received: that Christ died for our sins according to the Scriptures, that he was buried, that he was raised on the third day according to the Scriptures,", "lsg": "Je vous ai enseigné avant tout, comme je l’avais aussi reçu, que Christ est mort pour nos péchés, selon les Écritures; qu’il a été enseveli, et qu’il est ressuscité le troisième jour, selon les Écritures;", "lsgRef": "1 Corinthiens 15:3-4"},
+  "1 John 1:9": {"kjv": "If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.", "bsb": "If we confess our sins, He is faithful and just to forgive us our sins and to cleanse us from all unrighteousness.", "web": "If we confess our sins, he is faithful and righteous to forgive us the sins and to cleanse us from all unrighteousness.", "lsg": "Si nous confessons nos péchés, il est fidèle et juste pour nous les pardonner, et pour nous purifier de toute iniquité.", "lsgRef": "1 Jean 1:9"},
+  "1 John 4:16": {"kjv": "And we have known and believed the love that God hath to us. God is love; and he that dwelleth in love dwelleth in God, and God in him.", "bsb": "And we have come to know and believe the love that God has for us. God is love; whoever abides in love abides in God, and God in him.", "web": "We know and have believed the love which God has for us. God is love, and he who remains in love remains in God, and God remains in him.", "lsg": "Et nous, nous avons connu l’amour que Dieu a pour nous, et nous y avons cru. Dieu est amour; et celui qui demeure dans l’amour demeure en Dieu, et Dieu demeure en lui.", "lsgRef": "1 Jean 4:16"},
+  "1 Peter 3:18": {"kjv": "For Christ also hath once suffered for sins, the just for the unjust, that he might bring us to God, being put to death in the flesh, but quickened by the Spirit:", "bsb": "For Christ also suffered for sins once for all, the righteous for the unrighteous, to bring you to God. He was put to death in the body but made alive in the Spirit,", "web": "Because Christ also suffered for sins once, the righteous for the unrighteous, that he might bring you to God, being put to death in the flesh, but made alive in the Spirit,", "lsg": "Christ aussi a souffert une fois pour les péchés, lui juste pour des injustes, afin de nous amener à Dieu, ayant été mis à mort quant à la chair, mais ayant été rendu vivant quant à l’Esprit,", "lsgRef": "1 Pierre 3:18"},
+  "2 Corinthians 1:20": {"kjv": "For all the promises of God in him are yea, and in him Amen, unto the glory of God by us.", "bsb": "For all the promises of God are “Yes” in Christ. And so through Him, our “Amen” is spoken to the glory of God.", "web": "For however many are the promises of God, in him is the “Yes.” Therefore also through him is the “Amen”, to the glory of God through us.", "lsg": "car, pour ce qui concerne toutes les promesses de Dieu, c’est en lui qu’est le oui; c’est pourquoi encore l’Amen par lui est prononcé par nous à la gloire de Dieu.", "lsgRef": "2 Corinthiens 1:20"},
+  "2 Corinthians 5:17": {"kjv": "Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new.", "bsb": "Therefore if anyone is in Christ, he is a new creation. The old has passed away. Behold, the new has come!", "web": "Therefore if anyone is in Christ, he is a new creation. The old things have passed away. Behold, all things have become new.", "lsg": "Si quelqu’un est en Christ, il est une nouvelle créature. Les choses anciennes sont passées; voici, toutes choses sont devenues nouvelles.", "lsgRef": "2 Corinthiens 5:17"},
+  "2 Timothy 3:16": {"kjv": "All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness:", "bsb": "All Scripture is God-breathed and is useful for instruction, for conviction, for correction, and for training in righteousness,", "web": "Every Scripture is God-breathed and profitable for teaching, for reproof, for correction, and for instruction in righteousness,", "lsg": "Toute Écriture est inspirée de Dieu, et utile pour enseigner, pour convaincre, pour corriger, pour instruire dans la justice,", "lsgRef": "2 Timothée 3:16"},
+  "Acts 2:42": {"kjv": "And they continued stedfastly in the apostles’ doctrine and fellowship, and in breaking of bread, and in prayers.", "bsb": "They devoted themselves to the apostles’ teaching and to the fellowship, to the breaking of bread and to prayer.", "web": "They continued steadfastly in the apostles’ teaching and fellowship, in the breaking of bread, and prayer.", "lsg": "Ils persévéraient dans l’enseignement des apôtres, dans la communion fraternelle, dans la fraction du pain, et dans les prières.", "lsgRef": "Actes 2:42"},
+  "Acts 3:19": {"kjv": "Repent ye therefore, and be converted, that your sins may be blotted out, when the times of refreshing shall come from the presence of the Lord;", "bsb": "Repent, then, and turn back, so that your sins may be wiped away,", "web": "“Repent therefore, and turn again, that your sins may be blotted out, so that there may come times of refreshing from the presence of the Lord,", "lsg": "Repentez-vous donc et convertissez-vous, pour que vos péchés soient effacés,", "lsgRef": "Actes 3:19"},
+  "Colossians 1:15": {"kjv": "Who is the image of the invisible God, the firstborn of every creature:", "bsb": "The Son is the image of the invisible God, the firstborn over all creation.", "web": "He is the image of the invisible God, the firstborn of all creation.", "lsg": "Il est l’image du Dieu invisible, le premier-né de toute la création.", "lsgRef": "Colossiens 1:15"},
+  "Ephesians 2:8": {"kjv": "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God:", "bsb": "For it is by grace you have been saved through faith, and this not from yourselves; it is the gift of God,", "web": "for by grace you have been saved through faith, and that not of yourselves; it is the gift of God,", "lsg": "Car c’est par la grâce que vous êtes sauvés, par le moyen de la foi. Et cela ne vient pas de vous, c’est le don de Dieu.", "lsgRef": "Éphésiens 2:8"},
+  "Ephesians 2:8-9": {"kjv": "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast.", "bsb": "For it is by grace you have been saved through faith, and this not from yourselves; it is the gift of God, not by works, so that no one can boast.", "web": "for by grace you have been saved through faith, and that not of yourselves; it is the gift of God, not of works, that no one would boast.", "lsg": "Car c’est par la grâce que vous êtes sauvés, par le moyen de la foi. Et cela ne vient pas de vous, c’est le don de Dieu. Ce n’est point par les œuvres, afin que personne ne se glorifie.", "lsgRef": "Éphésiens 2:8-9"},
+  "Genesis 1:27": {"kjv": "So God created man in his own image, in the image of God created he him; male and female created he them.", "bsb": "So God created man in His own image; in the image of God He created him; male and female He created them.", "web": "God created man in his own image. In God’s image he created him; male and female he created them.", "lsg": "Dieu créa l’homme à son image, il le créa à l’image de Dieu, il créa l’homme et la femme.", "lsgRef": "Genèse 1:27"},
+  "Hebrews 10:24-25": {"kjv": "And let us consider one another to provoke unto love and to good works: Not forsaking the assembling of ourselves together, as the manner of some is; but exhorting one another: and so much the more, as ye see the day approaching.", "bsb": "And let us consider how to spur one another on to love and good deeds. Let us not neglect meeting together, as some have made a habit, but let us encourage one another, and all the more as you see the Day approaching.", "web": "Let’s consider how to provoke one another to love and good works, not forsaking our own assembling together, as the custom of some is, but exhorting one another, and so much the more as you see the Day approaching.", "lsg": "Veillons les uns sur les autres, pour nous exciter à la charité et aux bonnes œuvres. N’abandonnons pas notre assemblée, comme c’est la coutume de quelques-uns; mais exhortons-nous réciproquement, et cela d’autant plus que vous voyez s’approcher le jour.", "lsgRef": "Hébreux 10:24-25"},
+  "Hebrews 11:1": {"kjv": "Now faith is the substance of things hoped for, the evidence of things not seen.", "bsb": "Now faith is the assurance of what we hope for and the certainty of what we do not see.", "web": "Now faith is assurance of things hoped for, proof of things not seen.", "lsg": "Or la foi est une ferme assurance des choses qu’on espère, une démonstration de celles qu’on ne voit pas.", "lsgRef": "Hébreux 11:1"},
+  "Hebrews 4:12": {"kjv": "For the word of God is quick, and powerful, and sharper than any twoedged sword, piercing even to the dividing asunder of soul and spirit, and of the joints and marrow, and is a discerner of the thoughts and intents of the heart.", "bsb": "For the word of God is living and active. Sharper than any double-edged sword, it pierces even to dividing soul and spirit, joints and marrow. It judges the thoughts and intentions of the heart.", "web": "For the word of God is living and active, and sharper than any two-edged sword, piercing even to the dividing of soul and spirit, of both joints and marrow, and is able to discern the thoughts and intentions of the heart.", "lsg": "Car la parole de Dieu est vivante et efficace, plus tranchante qu’une épée quelconque à deux tranchants, pénétrante jusqu’à partager âme et esprit, jointures et mœlles; elle juge les sentiments et les pensées du cœur.", "lsgRef": "Hébreux 4:12"},
+  "Isaiah 53:6": {"kjv": "All we like sheep have gone astray; we have turned every one to his own way; and the LORD hath laid on him the iniquity of us all.", "bsb": "We all like sheep have gone astray, each one has turned to his own way; and the LORD has laid upon Him the iniquity of us all.", "web": "All we like sheep have gone astray. Everyone has turned to his own way; and the LORD has laid on him the iniquity of us all.", "lsg": "Nous étions tous errants comme des brebis, Chacun suivait sa propre voie; Et l’Éternel a fait retomber sur lui l’iniquité de nous tous.", "lsgRef": "Ésaïe 53:6"},
+  "Jeremiah 31:3": {"kjv": "The LORD hath appeared of old unto me, saying, Yea, I have loved thee with an everlasting love: therefore with lovingkindness have I drawn thee.", "bsb": "The LORD appeared to us in the past, saying: “I have loved you with an everlasting love; therefore I have drawn you with loving devotion.", "web": "The LORD appeared of old to me, saying, “Yes, I have loved you with an everlasting love. Therefore I have drawn you with loving kindness.", "lsg": "De loin l’Éternel se montre à moi: Je t’aime d’un amour éternel; C’est pourquoi je te conserve ma bonté.", "lsgRef": "Jérémie 31:3"},
+  "John 14:26": {"kjv": "But the Comforter, which is the Holy Ghost, whom the Father will send in my name, he shall teach you all things, and bring all things to your remembrance, whatsoever I have said unto you.", "bsb": "But the Advocate, the Holy Spirit, whom the Father will send in My name, will teach you all things and will remind you of everything I have told you.", "web": "But the Counselor, the Holy Spirit, whom the Father will send in my name, will teach you all things, and will remind you of all that I said to you.", "lsg": "Mais le consolateur, l’Esprit-Saint, que le Père enverra en mon nom, vous enseignera toutes choses, et vous rappellera tout ce que je vous ai dit.", "lsgRef": "Jean 14:26"},
+  "John 14:6": {"kjv": "Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me.", "bsb": "Jesus answered, “I am the way and the truth and the life. No one comes to the Father except through Me.", "web": "Jesus said to him, “I am the way, the truth, and the life. No one comes to the Father, except through me.", "lsg": "Jésus lui dit: Je suis le chemin, la vérité, et la vie. Nul ne vient au Père que par moi.", "lsgRef": "Jean 14:6"},
+  "John 1:14": {"kjv": "And the Word was made flesh, and dwelt among us, (and we beheld his glory, the glory as of the only begotten of the Father,) full of grace and truth.", "bsb": "The Word became flesh and made His dwelling among us. We have seen His glory, the glory of the one and only Son from the Father, full of grace and truth.", "web": "The Word became flesh and lived among us. We saw his glory, such glory as of the only born Son of the Father, full of grace and truth.", "lsg": "Et la parole a été faite chair, et elle a habité parmi nous, pleine de grâce et de vérité; et nous avons contemplé sa gloire, une gloire comme la gloire du Fils unique venu du Père.", "lsgRef": "Jean 1:14"},
+  "John 3:17": {"kjv": "For God sent not his Son into the world to condemn the world; but that the world through him might be saved.", "bsb": "For God did not send His Son into the world to condemn the world, but to save the world through Him.", "web": "For God didn’t send his Son into the world to judge the world, but that the world should be saved through him.", "lsg": "Dieu, en effet, n’a pas envoyé son Fils dans le monde pour qu’il juge le monde, mais pour que le monde soit sauvé par lui.", "lsgRef": "Jean 3:17"},
+  "Luke 22:19": {"kjv": "And he took bread, and gave thanks, and brake it, and gave unto them, saying, This is my body which is given for you: this do in remembrance of me.", "bsb": "And He took the bread, gave thanks and broke it, and gave it to them, saying, “This is My body, given for you; do this in remembrance of Me.”", "web": "He took bread, and when he had given thanks, he broke and gave it to them, saying, “This is my body which is given for you. Do this in memory of me.”", "lsg": "Ensuite il prit du pain; et, après avoir rendu grâces, il le rompit, et le leur donna, en disant: Ceci est mon corps, qui est donné pour vous; faites ceci en mémoire de moi.", "lsgRef": "Luc 22:19"},
+  "Mark 1:1": {"kjv": "The beginning of the gospel of Jesus Christ, the Son of God;", "bsb": "This is the beginning of the gospel of Jesus Christ, the Son of God.", "web": "The beginning of the Good News of Jesus Christ, the Son of God.", "lsg": "Commencement de l’Évangile de Jésus-Christ, Fils de Dieu.", "lsgRef": "Marc 1:1"},
+  "Matthew 28:19": {"kjv": "Go ye therefore, and teach all nations, baptizing them in the name of the Father, and of the Son, and of the Holy Ghost:", "bsb": "Therefore go and make disciples of all nations, baptizing them in the name of the Father, and of the Son, and of the Holy Spirit,", "web": "Go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit,", "lsg": "Allez, faites de toutes les nations des disciples, les baptisant au nom du Père, du Fils et du Saint-Esprit,", "lsgRef": "Matthieu 28:19"},
+  "Matthew 6:9-13": {"kjv": "After this manner therefore pray ye: Our Father which art in heaven, Hallowed be thy name. Thy kingdom come. Thy will be done in earth, as it is in heaven. Give us this day our daily bread. And forgive us our debts, as we forgive our debtors. And lead us not into temptation, but deliver us from evil: For thine is the kingdom, and the power, and the glory, for ever. Amen.", "bsb": "So then, this is how you should pray: ‘Our Father in heaven, hallowed be Your name. Your kingdom come, Your will be done, on earth as it is in heaven. Give us this day our daily bread. And forgive us our debts, as we also have forgiven our debtors. And lead us not into temptation, but deliver us from the evil one.’", "web": "Pray like this: “‘Our Father in heaven, may your name be kept holy. Let your Kingdom come. Let your will be done on earth as it is in heaven. Give us today our daily bread. Forgive us our debts, as we also forgive our debtors. Bring us not into temptation, but deliver us from the evil one. For yours is the Kingdom, the power, and the glory forever. Amen.’", "lsg": "Voici donc comment vous devez prier: Notre Père qui es aux cieux! Que ton nom soit sanctifié; que ton règne vienne; que ta volonté soit faite sur la terre comme au ciel. Donne-nous aujourd’hui notre pain quotidien; pardonne-nous nos offenses, comme nous aussi nous pardonnons à ceux qui nous ont offensés; ne nous induis pas en tentation, mais délivre-nous du malin. Car c’est à toi qu’appartiennent, dans tous les siècles, le règne, la puissance et la gloire. Amen!", "lsgRef": "Matthieu 6:9-13"},
+  "Philippians 4:6": {"kjv": "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.", "bsb": "Be anxious for nothing, but in everything, by prayer and petition, with thanksgiving, present your requests to God.", "web": "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God.", "lsg": "Ne vous inquiétez de rien; mais en toute chose faites connaître vos besoins à Dieu par des prières et des supplications, avec des actions de grâces.", "lsgRef": "Philippiens 4:6"},
+  "Psalms 119:105": {"kjv": "Thy word is a lamp unto my feet, and a light unto my path.", "bsb": "Your word is a lamp to my feet and a light to my path.", "web": "Your word is a lamp to my feet, and a light for my path.", "lsg": "Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier.", "lsgRef": "Psaume 119:105"},
+  "Romans 10:9": {"kjv": "That if thou shalt confess with thy mouth the Lord Jesus, and shalt believe in thine heart that God hath raised him from the dead, thou shalt be saved.", "bsb": "that if you confess with your mouth, “Jesus is Lord,” and believe in your heart that God raised Him from the dead, you will be saved.", "web": "that if you will confess with your mouth that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved.", "lsg": "Si tu confesses de ta bouche le Seigneur Jésus, et si tu crois dans ton cœur que Dieu l’a ressuscité des morts, tu seras sauvé.", "lsgRef": "Romains 10:9"},
+  "Romans 3:23": {"kjv": "For all have sinned, and come short of the glory of God;", "bsb": "for all have sinned and fall short of the glory of God,", "web": "for all have sinned, and fall short of the glory of God;", "lsg": "Car tous ont péché et sont privés de la gloire de Dieu;", "lsgRef": "Romains 3:23"},
+  "Romans 5:8": {"kjv": "But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us.", "bsb": "But God proves His love for us in this: While we were still sinners, Christ died for us.", "web": "But God commends his own love toward us, in that while we were yet sinners, Christ died for us.", "lsg": "Mais Dieu prouve son amour envers nous, en ce que, lorsque nous étions encore des pécheurs, Christ est mort pour nous.", "lsgRef": "Romains 5:8"},
+  "Romans 6:23": {"kjv": "For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord.", "bsb": "For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.", "web": "For the wages of sin is death, but the free gift of God is eternal life in Christ Jesus our Lord.", "lsg": "Car le salaire du péché, c’est la mort; mais le don gratuit de Dieu, c’est la vie éternelle en Jésus-Christ notre Seigneur.", "lsgRef": "Romains 6:23"},
+  "Romans 6:4": {"kjv": "Therefore we are buried with him by baptism into death: that like as Christ was raised up from the dead by the glory of the Father, even so we also should walk in newness of life.", "bsb": "We were therefore buried with Him through baptism into death, in order that, just as Christ was raised from the dead through the glory of the Father, we too may walk in newness of life.", "web": "We were buried therefore with him through baptism into death, that just as Christ was raised from the dead through the glory of the Father, so we also might walk in newness of life.", "lsg": "Nous avons donc été ensevelis avec lui par le baptême en sa mort, afin que, comme Christ est ressuscité des morts par la gloire du Père, de même nous aussi nous marchions en nouveauté de vie.", "lsgRef": "Romains 6:4"}
+};
+
+// Progress: lamp.start = { done: { lessonId: ms } }
+let startView = null;   // null: the list; a number: that lesson
+const startDone = () => load("lamp.start", { done: {} }).done;
+function startVerse(at) {
+  const e = START_TEXT[at], loc = parseRef(ver === "lsg" ? e.lsgRef : at);
+  return remember({ ver, b: loc.b, c: loc.c, v1: loc.v, v2: loc.v2, text: e[ver] });
+}
+function renderStart() {
+  const done = startDone(), n = START_LESSONS.filter(l => done[l.id]).length, el = $("#s-start");
+  if (startView !== null) {
+    const i = startView, l = START_LESSONS[i], L = l[lang], read = parseRef(l.read), isDone = !!done[l.id], last = i === START_LESSONS.length - 1;
+    el.innerHTML = `
+      <div><button class="btn" type="button" data-start-list>${t("start_all")}</button></div>
+      <header class="top"><span class="eyebrow">${t("start_lesson_of", i + 1, START_LESSONS.length)}</span><h1>${esc(L.title)}</h1></header>
+      ${L.body.map(p => `<p class="lesson-p">${esc(p)}</p>`).join("")}
+      <div class="eyebrow">${t("start_verses")}</div>
+      ${l.verses.map(v => verseCard(startVerse(v), { small: true })).join("")}
+      <div class="note"><div class="eyebrow" style="margin-bottom:6px">${t("start_think")}</div>${esc(L.think)}</div>
+      <div class="note lesson-pray"><div class="eyebrow" style="margin-bottom:6px">${t("start_pray")}</div><em>${esc(L.pray)}</em></div>
+      <div class="bar">
+        <button class="btn" type="button" data-open="${read.b},${read.c}">${t("start_read", chapterName(read.b, read.c))}</button>
+      </div>
+      <div class="bar">
+        ${isDone ? `<span class="pmeta" style="color:var(--good)">✓ ${t("start_done_label")}</span>` : `<button class="btn primary" type="button" data-start-done="${l.id}">${t("start_mark_done")}</button>`}
+        ${last ? "" : `<button class="btn${isDone ? " primary" : ""}" type="button" data-start-open="${i + 1}">${t("start_next")}</button>`}
+      </div>`;
+    return;
+  }
+  const word = w => { const loc = parseRef(w.at); return `<details class="word"><summary>${esc(w[lang][0])}</summary><p>${esc(w[lang][1])}</p>
+      <button class="btn" type="button" data-open="${loc.b},${loc.c},${loc.v}">${formatRef(loc.b, loc.c, loc.v)}</button></details>`; };
+  el.innerHTML = `
+    <header class="top"><span class="eyebrow">${t("start_eyebrow")}</span><h1>${t("start_title")}</h1></header>
+    <p class="muted" style="margin:0">${t("start_intro")}</p>
+    <div class="bar"><span class="pmeta" style="flex:1">${t("start_progress", n, START_LESSONS.length)}</span></div>
+    <div class="progress"><i style="width:${(n / START_LESSONS.length) * 100}%"></i></div>
+    <div class="lessons">${START_LESSONS.map((l, i) => `<button class="lesson${done[l.id] ? " done" : ""}" type="button" data-start-open="${i}">
+        <span class="num">${done[l.id] ? "✓" : i + 1}</span><span><b>${esc(l[lang].title)}</b><small>${esc(l[lang].sum)}</small></span></button>`).join("")}</div>
+    <div class="eyebrow" style="margin-top:6px">${t("start_where")}</div>
+    <div class="note">${t("start_where_text")}
+      <div class="bar" style="margin-top:10px"><button class="btn primary" type="button" data-open="40,0">${t("start_mark")}</button><button class="btn" type="button" data-open="42,0">${t("start_john")}</button><button class="btn" type="button" data-go-plans>${t("plans_title")}</button></div></div>
+    <div class="eyebrow" style="margin-top:6px">${t("start_words")}</div>
+    <div class="words">${START_WORDS.map(word).join("")}</div>
+    <div class="note">${t("start_church")}</div>`;
+}
+$("#s-start").addEventListener("click", e => {
+  const o = e.target.closest("[data-start-open]"), d = e.target.closest("[data-start-done]"), back = e.target.closest("[data-start-list]");
+  const op = e.target.closest("[data-open]");
+  if (op) { const [b, c, v] = op.dataset.open.split(",").map(Number); openChapter(b, c, v === undefined ? null : v); return; }
+  if (o) { startView = +o.dataset.startOpen; renderStart(); scrollTo(0, 0); }
+  else if (back) { startView = null; renderStart(); scrollTo(0, 0); }
+  else if (d) {
+    const st = load("lamp.start", { done: {} });
+    st.done[d.dataset.startDone] = Date.now();
+    store("lamp.start", st);
+    toast(t("start_toast"));
+    renderStart();
+  }
+});
+
 // ---------- Badges ----------
 // Earned from what's already kept on this device; lamp.badges remembers when each was earned: { id: ms }.
 function longestRun(dateKeys) {
@@ -3614,6 +3881,7 @@ function progress() {
     marks: Object.keys(load("lamp.marks", {})).length, saved: load("lamp.saved", []).length,
     prayers: prayersNow.length, answered: prayersNow.some(p => p.answered),
     learned: mem.filter(m => m.learned).length, shared: load("lamp.shared", 0),
+    firstSteps: START_LESSONS.every(l => load("lamp.start", { done: {} }).done[l.id]),
   };
 }
 const BADGES = [
@@ -3637,6 +3905,7 @@ const BADGES = [
   { id: "answered", icon: "heart", test: p => p.answered, en: ["Answered prayer", "Mark a prayer as answered"], fr: ["Prière exaucée", "Marquer une prière comme exaucée"] },
   { id: "memo1", icon: "brain", test: p => p.learned >= 1, en: ["Hidden in my heart", "Learn a verse by heart"], fr: ["Gardé dans mon cœur", "Apprendre un verset par cœur"] },
   { id: "memo5", icon: "brain", test: p => p.learned >= 5, en: ["Memory keeper", "Learn 5 verses by heart"], fr: ["Mémoire vive", "Apprendre 5 versets par cœur"] },
+  { id: "firststeps", icon: "lamp", test: p => p.firstSteps, en: ["First steps", "Finish all the “First steps” lessons"], fr: ["Premiers pas", `Terminer toutes les leçons «${NB}Premiers pas${NB}»`] },
   { id: "share", icon: "share", test: p => p.shared >= 1, en: ["Messenger", "Share something from Lamp with someone"], fr: ["Messager", "Partager quelque chose de Lamp avec quelqu'un"] },
 ];
 const badgesEarned = () => { const got = load("lamp.badges", {}); return BADGES.filter(b => got[b.id]).length; };
