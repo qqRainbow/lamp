@@ -1,13 +1,20 @@
 # Builds Lamp's own website into site/: the app page, its data, fonts, icons, the web app manifest and the offline service worker.
 # Run from this folder:  py build.py   — then upload the site folder (see README.md).
 #                        py build.py app   — builds app/www instead, the files bundled into the App Store app (see app/README.md).
-import datetime, hashlib, json, pathlib, shutil, sys
+import datetime, hashlib, json, pathlib, re, shutil, sys
 
 ROOT = pathlib.Path(__file__).parent
 APP = len(sys.argv) > 1 and sys.argv[1] == "app"
 SITE = ROOT / "app" / "www" if APP else ROOT / "site"
 DATA = ["kjv.json", "bsb.json", "web.json", "lsg.json", "xref.json", "easton.json"]
+# The contact shown on privacy.html (Apple's privacy policy and support page). While empty, that section is left out.
+CONTACT_EMAIL = ""
 ICONS = ["icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png"]
+
+def write_unix(path, text):
+    # Unix line endings on every computer (Path.write_text only takes newline= from Python 3.10, and Macs ship 3.9).
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(text)
 
 def digest(paths):
     h = hashlib.sha256()
@@ -84,19 +91,18 @@ MANIFEST = {
     ],
 }
 
-# The App Store app: no manifest or service worker (the files are already in the app), but Capacitor's scripts, which
+# The App Store app: no zooming (like a native app; the Bible reader has its own text size), no manifest or service worker (the files are already in the app), but Capacitor's scripts, which
 # `npm install` in app/ puts in app/node_modules (setup.sh runs it before this).
 APP_HEAD = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
-<style>[hidden] { display: none !important; } body { margin: 0; } html { -webkit-tap-highlight-color: transparent; }</style>
+<style>[hidden] { display: none !important; } body { margin: 0; } html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }</style>
 """
 CAP_SCRIPTS = {  # node_modules path → name in www/
     "@capacitor/core/dist/capacitor.js": "capacitor.js",
-    "@capacitor/filesystem/dist/plugin.js": "cap-filesystem.js",
     "@capacitor/share/dist/plugin.js": "cap-share.js",
     "@capacitor/local-notifications/dist/plugin.js": "cap-local-notifications.js",
 }
@@ -114,27 +120,35 @@ if APP:
     for m, name in CAP_SCRIPTS.items():
         shutil.copy2(mods / m, SITE / name)
     scripts = "".join(f'<script src="{name}"></script>\n' for name in CAP_SCRIPTS.values())
-    (SITE / "index.html").write_text(APP_HEAD + scripts + "</head>\n<body>\n" + page + "\n</body>\n</html>\n", encoding="utf-8", newline="\n")
+    write_unix(SITE / "index.html", APP_HEAD + scripts + "</head>\n<body>\n" + page + "\n</body>\n</html>\n")
     for f in DATA:
         shutil.copy2(ROOT / f, SITE / f)
     size = sum(p.stat().st_size for p in SITE.rglob("*") if p.is_file())
     print(f"Built {SITE} ({size / 1e6:.1f} MB)")
     sys.exit()
 (SITE / "icons").mkdir()
-(SITE / "index.html").write_text(HEAD + page + FOOT, encoding="utf-8", newline="\n")
+write_unix(SITE / "index.html", HEAD + page + FOOT)
 (SITE / "manifest.webmanifest").write_text(json.dumps(MANIFEST, ensure_ascii=False, indent=2), encoding="utf-8")
 (SITE / ".nojekyll").write_text("")  # GitHub Pages: serve files as they are
 for f in DATA:
     shutil.copy2(ROOT / f, SITE / f)
 for f in ICONS:
     shutil.copy2(ROOT / "icons" / f, SITE / "icons" / f)
+# The privacy policy, linked from the App Store listing (and used as its support page).
+privacy = (ROOT / "privacy.html").read_text(encoding="utf-8")
+if CONTACT_EMAIL:
+    privacy = privacy.replace("__CONTACT_EMAIL__", CONTACT_EMAIL)
+else:
+    privacy = re.sub(r"\s*<!-- CONTACT -->.*?<!-- /CONTACT -->", "", privacy, flags=re.S)
+assert "__CONTACT_EMAIL__" not in privacy
+write_unix(SITE / "privacy.html", privacy)
 
 # The service worker's cache names change whenever the files do, so phones pick up new versions by themselves.
 shell = ["index.html", "manifest.webmanifest"] + ["icons/" + f for f in ICONS] + ["fonts/" + f for f in FONTS if not f.endswith(".txt")]
 sw = (ROOT / "sw.js").read_text(encoding="utf-8")
 sw = sw.replace("__FONT_FILES__", ", ".join(f'"fonts/{f}"' for f in FONTS if not f.endswith(".txt")))
 sw = sw.replace("__SHELL_VERSION__", digest([SITE / f for f in shell])).replace("__DATA_VERSION__", digest([SITE / f for f in DATA]))
-(SITE / "sw.js").write_text(sw, encoding="utf-8", newline="\n")
+write_unix(SITE / "sw.js", sw)
 
 size = sum(p.stat().st_size for p in SITE.rglob("*") if p.is_file())
 print(f"Built {SITE} ({size / 1e6:.1f} MB)")

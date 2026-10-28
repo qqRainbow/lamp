@@ -74,7 +74,8 @@ main {
   max-width: 560px; margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 20px calc(96px + env(safe-area-inset-bottom, 0px));
+  /* The status bar's height on top: 0 in a browser, the clock and Dynamic Island in the iPhone app. */
+  padding-block: calc(20px + env(safe-area-inset-top, 0px)) calc(96px + env(safe-area-inset-bottom, 0px));
 }
 h1, h2 { font-family: var(--font-verse); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.15; }
 h1 { font-size: 2.1rem; }
@@ -1894,7 +1895,7 @@ const T = {
     reminder_note: "This opens Google Calendar with a daily event that links back to Lamp, so your phone reminds you at that time. Using Apple Calendar or Outlook? Create a daily event there and paste in Lamp's link from below.",
     reminder_event: "Verse of the day (Lamp)", reminder_details: url => `Open Lamp to read today's verse:\n${url}`,
     home_title: "Add Lamp to your home screen", share_title: "Share Lamp",
-    reminder_daily: "Daily notification",
+    reminder_daily: "Daily notification", pic_store: "Free on the App Store",
     reminder_note_app: "Your phone shows the verse of the day at this time. Open Lamp now and then to keep the reminders coming.",
     reminder_denied: "Notifications are off for Lamp. You can turn them on in the iPhone's Settings, under Lamp.",
     reminder_on: time => `You'll get the verse of the day at ${time}.`,
@@ -2097,7 +2098,7 @@ const T = {
     reminder_note: `Google Agenda s'ouvre avec un événement quotidien qui renvoie vers Lamp, et votre téléphone vous le rappelle à cette heure-là. Vous utilisez Calendrier d'Apple ou Outlook${NB}? Créez-y un événement quotidien et collez-y le lien de Lamp ci-dessous.`,
     reminder_event: "Verset du jour (Lamp)", reminder_details: url => `Ouvrez Lamp pour lire le verset du jour${NB}:\n${url}`,
     home_title: "Ajouter Lamp à l'écran d'accueil", share_title: "Partager Lamp",
-    reminder_daily: "Notification quotidienne",
+    reminder_daily: "Notification quotidienne", pic_store: "Gratuit sur l’App Store",
     reminder_note_app: "Votre téléphone affiche le verset du jour à cette heure-là. Ouvrez Lamp de temps en temps pour que les rappels continuent.",
     reminder_denied: "Les notifications sont désactivées pour Lamp. Vous pouvez les activer dans les Réglages de l'iPhone, à la rubrique Lamp.",
     reminder_on: time => `Vous recevrez le verset du jour à ${time}.`,
@@ -2303,11 +2304,15 @@ function store(key, val) {
 // In the iPhone app (built with Capacitor, see app/README.md) Lamp runs from files inside the app. Its web view ignores
 // download links, so files leave through the share sheet ("Save to Files", AirDrop, Messages…).
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-// The app build loads Capacitor's scripts (capacitor.js and each plugin's plugin.js), which expose the plugins as globals.
+// The app build loads capacitor.js and the Share and LocalNotifications scripts, which expose those plugins as globals.
+// Filesystem's script needs more of its own, so it (and anything else) is reached through registerPlugin, which talks to
+// the plugin's native side directly.
+const plugins = {};
 function plugin(name) {
   if (!NATIVE) return null;
-  const C = window.Capacitor, umd = window["capacitor" + name];
-  return (umd && umd[name]) || (C.Plugins && C.Plugins[name]) || (C.registerPlugin ? C.registerPlugin(name) : null);
+  if (plugins[name]) return plugins[name];
+  const C = window.Capacitor, umd = window["capacitor" + name], reg = C.registerPlugin || (window.capacitorExports && capacitorExports.registerPlugin);
+  return plugins[name] = (umd && umd[name]) || (reg ? reg(name) : C.Plugins && C.Plugins[name]) || null;
 }
 const blobBase64 = blob => new Promise((done, fail) => {
   const r = new FileReader(); r.onload = () => done(String(r.result).split(",")[1]); r.onerror = fail; r.readAsDataURL(blob);
@@ -3470,7 +3475,7 @@ function answerBook(n) {
 // The phone's share sheet where there is one; otherwise the text and link are copied for pasting into a message.
 async function shareText(text) {
   if (NATIVE) {
-    try { await plugin("Share").share({ title: "Lamp", text, url: APP_URL }); countShare(); }
+    try { await plugin("Share").share(APP_URL ? { title: "Lamp", text, url: APP_URL } : { title: "Lamp", text }); countShare(); }
     catch (err) { if (!shareCancelled(err)) toast(t("toast_nocopy")); }
     return;
   }
@@ -3623,7 +3628,9 @@ async function drawPicture() {
   g.textAlign = "center"; g.textBaseline = "top";
   g.font = `500 ${story ? 26 : 22}px "Figtree", system-ui, sans-serif`;
   g.globalAlpha = .7;
-  g.fillText(APP_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""), W / 2, markY + icon + 18);
+  // The website prints its address; the app says where to find it (once it has an App Store page).
+  const where = NATIVE ? (APP_URL ? t("pic_store") : "") : APP_URL.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  if (where) g.fillText(where, W / 2, markY + icon + 18);
   g.globalAlpha = 1;
 }
 
@@ -4482,8 +4489,10 @@ $("#restore-preview").addEventListener("click", e => {
 // ---------- Reminder and home screen ----------
 // Lamp's own website links its manifest; inside Claude the page runs in a frame and can't read its own claude.ai address.
 const STANDALONE = !!document.querySelector('link[rel="manifest"]');
-const PUBLIC_URL = "https://qqrainbow.github.io/lamp/";  // what the app shares and prints on pictures
-const APP_URL = NATIVE ? PUBLIC_URL : STANDALONE ? location.origin + location.pathname.replace(/index\.html$/, "") : "https://claude.ai/artifact/4tpcdmg1wGh8VMUUYucnDW";
+// The app links to its App Store page, never to the website. Fill this in once App Store Connect gives Lamp its id
+// (e.g. "https://apps.apple.com/app/id1234567890"). While it's empty, the app shares without a link.
+const STORE_URL = "";
+const APP_URL = NATIVE ? STORE_URL : STANDALONE ? location.origin + location.pathname.replace(/index\.html$/, "") : "https://claude.ai/artifact/4tpcdmg1wGh8VMUUYucnDW";
 if (STANDALONE) {
   for (const [id, key] of [["rnote", "reminder_note_site"], ["home-help", "home_help_site"]]) $("#" + id).dataset.t = key;
   $("#home-ios ol").dataset.t = "home_ios_site";
@@ -4551,6 +4560,8 @@ function renderExtras() {
   $("#about-version").textContent = LAMP_VERSION.startsWith("__") ? "" : t("about_version", LAMP_VERSION);
   $("#rlink").href = reminderLink();
   $("#applink").textContent = APP_URL;
+  // The app without its App Store link yet: "Tell a friend" shares the description only.
+  ["#applink", "#copylink"].forEach(s => $(s).hidden = !APP_URL);
   $("#tellfriend").dataset.share = t("share_app");
   // The app's notifications are written in the current language and Bible, so they're rescheduled when either changes.
   if (NATIVE && renderExtras.seen !== lang + ver) { renderExtras.seen = lang + ver; scheduleReminders(); }
