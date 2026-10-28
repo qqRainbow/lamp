@@ -111,6 +111,9 @@ button { font: inherit; cursor: pointer; }
   border-radius: 999px; padding: 7px 14px; font-size: .85rem; font-weight: 600;
 }
 .btn:hover { border-color: var(--gold); }
+/* Verse card buttons stay on one row on a phone, French labels included. */
+.verse .actions { gap: 6px; }
+.verse .actions .btn { padding-inline: 10px; }
 .btn.on { background: var(--gold-soft); border-color: var(--gold); color: var(--ink); }
 .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); padding: 11px 20px; font-size: .95rem; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
@@ -143,15 +146,15 @@ textarea:focus { outline: none; border-color: var(--gold); }
 .opt.wrong { border-color: var(--bad); box-shadow: inset 4px 0 0 var(--bad); }
 .feedback { font-size: .92rem; display: flex; flex-direction: column; gap: 12px; }
 .feedback:empty { display: none; }
-.levels { display: flex; flex-direction: column; gap: 10px; }
+.levels { display: flex; flex-direction: column; gap: 8px; }
 .level {
-  display: grid; gap: 2px; text-align: left; width: 100%; color: var(--ink);
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+  display: grid; gap: 1px; text-align: left; width: 100%; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 11px 14px;
 }
 .level:hover { border-color: var(--gold); }
-.lv-name { font-family: var(--font-verse); font-size: 1.45rem; font-weight: 600; line-height: 1.2; }
-.lv-desc { color: var(--muted); font-size: .92rem; }
-.lv-meta { color: var(--gold); font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.lv-name { font-family: var(--font-verse); font-size: 1.3rem; font-weight: 600; line-height: 1.2; }
+.lv-desc { color: var(--muted); font-size: .88rem; }
+.lv-meta { color: var(--gold); font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; font-variant-numeric: tabular-nums; }
 .lv-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 /* Timed mode: a fuse that burns down from full to empty */
 .timer { display: flex; align-items: center; gap: 8px; color: var(--gold); }
@@ -228,6 +231,9 @@ textarea:focus { outline: none; border-color: var(--gold); }
 .word { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
 .word summary { font-weight: 700; cursor: pointer; }
 .word p { margin: 8px 0 10px; line-height: 1.5; }
+/* About Lamp */
+.credits { margin: 0; padding-left: 18px; font-size: .88rem; color: var(--muted); line-height: 1.5; }
+.credits li + li { margin-top: 4px; }
 /* Badges: earned ones glow gold, the rest wait in grey */
 .badges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .badge {
@@ -560,6 +566,13 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
       <div><button class="btn" type="button" id="restore-check" data-t="restore_check"></button></div>
       <div id="restore-preview"></div>
     </div>
+    <div class="settings about">
+      <div class="eyebrow" data-t="about_title"></div>
+      <p style="margin:0"><strong>Lamp</strong> <span class="muted" id="about-version"></span></p>
+      <p class="muted" style="margin:0" data-t="about_privacy"></p>
+      <div class="eyebrow" style="margin-top:6px" data-t="about_credits"></div>
+      <ul class="credits" data-t="about_list"></ul>
+    </div>
   </section>
 
   <!-- MEMORIZE (opened from its tile on Today) -->
@@ -579,7 +592,7 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
     </header>
     <form class="ask" id="ask">
       <label for="mood" class="muted" data-t="find_label"></label>
-      <textarea id="mood"></textarea>
+      <textarea id="mood" data-t-ph="find_ph"></textarea>
       <div><button class="btn primary" type="submit" data-t="find_button"></button></div>
     </form>
     <div class="chips" id="chips"></div>
@@ -1917,13 +1930,13 @@ const T = {
     restore_confirm: "Tap again to replace everything on this device", restore_done: "Restored. Reloading…",
     backup_bad: "That isn't a Lamp backup. Check that you picked the right file, or that you copied all of the text.",
     tab_today: "Today", tab_find: "Find", tab_saved: "Journal",
-    save: "Save", saved: "Saved", copy: "Copy", read_chapter: "Read chapter",
+    save: "Save", saved: "Saved", copy: "Copy", read_chapter: "Read",
     toast_saved: "Saved", toast_removed: "Removed from saved", toast_copied: "Copied",
     toast_selected: "Text selected, copy it from here", toast_nocopy: "Couldn't copy on this device",
     quote: s => `“${s}”`,
     find_eyebrow: "Find a verse", find_title: "How are you feeling?",
     find_label: "Write a few words about what you're going through.",
-    find_example: "I'm stressed about exams and can't sleep", find_button: "Find verses",
+    find_ph: "For example: I'm stressed about exams and can't sleep", find_button: "Find verses",
     find_empty: "Write a few words first, or tap one of the feelings above.",
     find_nomatch: "I couldn't match that to a feeling yet. Try different words, or tap one of the feelings above.",
     verses_for: labels => `Verses for: <strong style="color:var(--ink)">${labels}</strong>`, and: " and ",
@@ -2036,6 +2049,10 @@ const T = {
     start_where_text: "A good place to begin is one of the Gospels, the books about Jesus' life. Mark is the shortest and moves quickly; John goes deep into who Jesus is. Read a chapter a day, or follow a reading plan.",
     start_mark: "Start Mark", start_john: "Start John", start_words: "Words you'll hear",
     start_church: "Faith grows best with others. Bring your questions to a pastor or a Christian friend: no question is too simple.",
+    about_title: "About Lamp", about_credits: "Credits",
+    about_version: v => `version ${v}`,
+    about_privacy: "No account and no tracking. Your prayers, notes, highlights and progress are kept only on this device; use Back up to keep a copy. Fonts load from Google Fonts.",
+    about_list: `<li>King James Version (1769): public domain.</li><li>Berean Standard Bible (BSB): public domain.</li><li>World English Bible (WEB): public domain.</li><li>Louis Segond 1910: public domain.</li><li>Cross-references: OpenBible.info, CC BY.</li><li>Easton's Bible Dictionary (1897): public domain.</li><li>Fonts: Cormorant Garamond, Literata, Figtree, Caveat and Playfair Display, under the SIL Open Font License.</li>`,
     update_ready: "A new version of Lamp is ready.", update_go: "Refresh", update_later: "Not now",
     leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
     back_to_quiz: (i, n) => `‹ Back to the quiz · question ${i} of ${n}`, back_to_game: (i, n) => `‹ Back to the game · question ${i} of ${n}`,
@@ -2112,13 +2129,13 @@ const T = {
     restore_confirm: "Touchez encore pour tout remplacer sur cet appareil", restore_done: "Restauré. Rechargement…",
     backup_bad: "Ce n'est pas une sauvegarde Lamp. Vérifiez le fichier choisi, ou que tout le texte a bien été copié.",
     tab_today: "Aujourd'hui", tab_find: "Trouver", tab_saved: "Journal",
-    save: "Enregistrer", saved: "Enregistré", copy: "Copier", read_chapter: "Lire le chapitre",
+    save: "Enregistrer", saved: "Enregistré", copy: "Copier", read_chapter: "Lire",
     toast_saved: "Enregistré", toast_removed: "Retiré des favoris", toast_copied: "Copié",
     toast_selected: "Texte sélectionné, copiez-le ici", toast_nocopy: "Impossible de copier sur cet appareil",
     quote: s => `«${NB}${s}${NB}»`,
     find_eyebrow: "Trouver un verset", find_title: `Comment vous sentez-vous${NB}?`,
     find_label: "Écrivez quelques mots sur ce que vous vivez.",
-    find_example: "Je suis stressé par mes examens et je n'arrive pas à dormir", find_button: "Trouver des versets",
+    find_ph: `Par exemple${NB}: je suis stressé par mes examens et je n'arrive pas à dormir`, find_button: "Trouver des versets",
     find_empty: "Écrivez d'abord quelques mots, ou touchez un des ressentis ci-dessus.",
     find_nomatch: "Je n'ai pas reconnu de ressenti dans ces mots. Essayez d'autres mots, ou touchez un des ressentis ci-dessus.",
     verses_for: labels => `Des versets pour${NB}: <strong style="color:var(--ink)">${labels}</strong>`, and: " et ",
@@ -2231,6 +2248,10 @@ const T = {
     start_where_text: "Un bon point de départ est l'un des Évangiles, les livres sur la vie de Jésus. Marc est le plus court et va droit au but ; Jean approfondit qui est Jésus. Lisez un chapitre par jour, ou suivez un plan de lecture.",
     start_mark: "Commencer Marc", start_john: "Commencer Jean", start_words: "Les mots à connaître",
     start_church: "La foi grandit mieux avec d'autres. Posez vos questions à un pasteur ou à un ami chrétien : aucune question n'est trop simple.",
+    about_title: "À propos de Lamp", about_credits: "Crédits",
+    about_version: v => `version ${v}`,
+    about_privacy: "Pas de compte, aucun suivi. Vos prières, notes, surlignages et progrès sont gardés uniquement sur cet appareil$ ; utilisez la sauvegarde pour en garder une copie. Les polices viennent de Google Fonts.",
+    about_list: `<li>King James Version (1769)$ : domaine public.</li><li>Berean Standard Bible (BSB)$ : domaine public.</li><li>World English Bible (WEB)$ : domaine public.</li><li>Louis Segond 1910$ : domaine public.</li><li>Références croisées$ : OpenBible.info, CC BY.</li><li>Dictionnaire biblique d'Easton (1897)$ : domaine public.</li><li>Polices$ : Cormorant Garamond, Literata, Figtree, Caveat et Playfair Display, sous licence SIL Open Font License.</li>`,
     update_ready: "Une nouvelle version de Lamp est prête.", update_go: "Actualiser", update_later: "Plus tard",
     leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
     back_to_quiz: (i, n) => `‹ Retour au quiz · question ${i} sur ${n}`, back_to_game: (i, n) => `‹ Retour au jeu · question ${i} sur ${n}`,
@@ -2467,12 +2488,9 @@ function refreshAll() {
 }
 document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => {
   if (b.dataset.lang === lang) return;
-  const oldExample = t("find_example");
   lang = b.dataset.lang; store("lamp.lang", lang);
   ver = load("lamp.ver." + lang, DEFAULT_VER[lang]);
   if (!VERSIONS[ver]) ver = DEFAULT_VER[lang];
-  const mood = $("#mood");
-  if (!mood.value.trim() || mood.value === oldExample) mood.value = t("find_example");
   quiz = null;
   refreshAll();
 }));
@@ -2599,7 +2617,7 @@ const ICONS = {
   quiz: `<svg viewBox="0 0 24 24"><path d="M9.2 9a3 3 0 1 1 3.8 2.9c-.6.2-1 .7-1 1.3V14"/><circle cx="12" cy="17.6" r=".6"/><circle cx="12" cy="12" r="9"/></svg>`,
   heart: `<svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg>`,
   bookmark: `<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>`,
-  quote: `<svg viewBox="0 0 24 24"><path d="M5 11.5h4.5V17H4v-5c0-3 1.5-5 4-6"/><path d="M14.5 11.5H19V17h-5.5v-5c0-3 1.5-5 4-6"/></svg>`,
+  quote: `<svg viewBox="0 0 24 24"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-8l-4.5 3.5v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M8 9h8M8 12h5"/></svg>`,  // a speech bubble: who said it
   brain: `<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 12.5h4"/><path d="M14 15.5l1.5 1.5 3-3"/></svg>`,
   gear: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
   marker: `<svg viewBox="0 0 24 24"><path d="M14.5 4.5l5 5-8.5 8.5H6v-5z"/><path d="M4 21h16"/></svg>`,
@@ -2617,7 +2635,10 @@ const emptyState = (icon, title, text, after = "") =>
 let lastMoods = null;
 function renderFind() {
   $("#chips").innerHTML = CHIP_ORDER.map(k => `<button class="btn" type="button" data-mood="${k}">${MOODS[k].label[lang]}</button>`).join("");
-  if (lastMoods) showMoods(lastMoods.keys, lastMoods.crisis); else findFor($("#mood").value);
+  // Until something is typed or a feeling is tapped, the results area stays empty.
+  if (lastMoods) showMoods(lastMoods.keys, lastMoods.crisis);
+  else if ($("#mood").value.trim()) findFor($("#mood").value);
+  else $("#results").innerHTML = "";
 }
 $("#chips").addEventListener("click", e => {
   const b = e.target.closest("[data-mood]"); if (!b) return;
@@ -3185,7 +3206,7 @@ function renderQuizStart() {
     <div class="levels">${levels.map((l, i) => {
       const best = bestOf(l, timed), n = QUIZ.filter(q => q.level === l).length;
       // Flames show difficulty; "Who said it?" gets a speech mark instead.
-      const mark = l === "who" ? `<span class="pips ic" aria-hidden="true">${ICONS.quote}</span>`
+      const mark = l === "who" ? `<span class="ic" style="color:var(--gold)" aria-hidden="true">${ICONS.quote}</span>`
         : `<span class="pips" aria-hidden="true">${[0, 1, 2].map(k => k <= i ? FLAME : FLAME.replace("<svg", '<svg class="off"')).join("")}</span>`;
       return `<button class="level" data-level="${l}">
         <span class="lv-top"><span class="lv-name">${t("level_" + l)}</span>${mark}</span>
@@ -3830,6 +3851,7 @@ function renderStart() {
   const word = w => { const loc = parseRef(w.at); return `<details class="word"><summary>${esc(w[lang][0])}</summary><p>${esc(w[lang][1])}</p>
       <button class="btn" type="button" data-open="${loc.b},${loc.c},${loc.v}">${formatRef(loc.b, loc.c, loc.v)}</button></details>`; };
   el.innerHTML = `
+    <div><button class="btn" type="button" data-go="today">${t("back_today")}</button></div>
     <header class="top"><span class="eyebrow">${t("start_eyebrow")}</span><h1>${t("start_title")}</h1></header>
     <p class="muted" style="margin:0">${t("start_intro")}</p>
     <div class="bar"><span class="pmeta" style="flex:1">${t("start_progress", n, START_LESSONS.length)}</span></div>
@@ -3926,6 +3948,7 @@ const shortDate = ms => new Date(ms).toLocaleDateString(lang, { day: "numeric", 
 function renderBadges() {
   const got = load("lamp.badges", {}), n = badgesEarned();
   $("#s-badges").innerHTML = `
+    <div><button class="btn" type="button" data-go="today">${t("back_today")}</button></div>
     <header class="top"><span class="eyebrow">${t("badges_eyebrow")}</span><h1>${t("badges_title")}</h1></header>
     <div class="bar"><span class="pmeta" style="flex:1">${t("badges_count", n, BADGES.length)}</span>${n ? `<button class="btn" data-share="${esc(t("share_badges", n, BADGES.length))}">${t("share")}</button>` : ""}</div>
     <div class="progress"><i style="width:${(n / BADGES.length) * 100}%"></i></div>
@@ -4471,7 +4494,9 @@ if (STANDALONE && isInstalled()) {
   $("#home-help").dataset.t = "installed";
   ["#home-ios", "#home-android"].forEach(s => $(s).hidden = true);
 }
+const LAMP_VERSION = "__LAMP_VERSION__";
 function renderExtras() {
+  $("#about-version").textContent = LAMP_VERSION.startsWith("__") ? "" : t("about_version", LAMP_VERSION);
   $("#rlink").href = reminderLink();
   $("#applink").textContent = APP_URL;
   $("#tellfriend").dataset.share = t("share_app");
@@ -4490,6 +4515,5 @@ $("#copylink").addEventListener("click", () => {
   });
 });
 
-$("#mood").value = T[lang].find_example;
 refreshAll();
 </script>

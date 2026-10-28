@@ -1,6 +1,6 @@
 # Builds Lamp's own website into site/: the app page, its data, icons, the web app manifest and the offline service worker.
 # Run from this folder:  py build.py   — then upload the site folder (see README.md).
-import hashlib, json, pathlib, shutil
+import datetime, hashlib, json, pathlib, shutil
 
 ROOT = pathlib.Path(__file__).parent
 SITE = ROOT / "site"
@@ -16,6 +16,8 @@ def digest(paths):
 page = (ROOT / "lamp.html").read_text(encoding="utf-8")
 # lamp.html is written for a Claude artifact, which supplies the document skeleton; drop the Claude-only meta.
 page = page.replace('<meta name="claude:viewport-fit-sides" content="cover">\n', "")
+# The version shown in Settings → About Lamp: the day the site was built.
+page = page.replace("__LAMP_VERSION__", datetime.date.today().strftime("%Y.%m.%d"))
 
 HEAD = """<!doctype html>
 <html lang="en">
