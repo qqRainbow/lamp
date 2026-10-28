@@ -1,10 +1,9 @@
 // Lamp's service worker: keeps the app and every Bible you've opened on the phone, so Lamp works offline.
 // build.py fills in the two versions from the files' contents.
-const SHELL = "lamp-shell-__SHELL_VERSION__";   // the app page, manifest and icons
+const SHELL = "lamp-shell-__SHELL_VERSION__";   // the app page, manifest, icons and fonts
 const DATA = "lamp-data-__DATA_VERSION__";      // Bibles, cross-references and dictionary (large, so only fetched when used)
-const FONTS = "lamp-fonts";
 const SHELL_FILES = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png",
-  "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
+  "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", __FONT_FILES__];
 const PAGE_WAIT = 3000;  // how long opening Lamp waits for the newest page before using the saved one
 
 self.addEventListener("install", e => {
@@ -15,7 +14,7 @@ self.addEventListener("install", e => {
 });
 
 self.addEventListener("activate", e => {
-  const keep = [SHELL, DATA, FONTS];
+  const keep = [SHELL, DATA];  // also clears the old Google Fonts cache, "lamp-fonts"
   e.waitUntil(caches.keys()
     .then(keys => Promise.all(keys.filter(k => k.startsWith("lamp-") && !keep.includes(k)).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
@@ -56,8 +55,6 @@ self.addEventListener("fetch", e => {
     e.respondWith(cacheFirst(DATA, req));
   } else if (url.origin === location.origin) {
     e.respondWith(cacheFirst(SHELL, req));
-  } else if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
-    e.respondWith(cacheFirst(FONTS, req));
   }
   // Anything else (Google Calendar links and so on) goes straight to the network.
 });

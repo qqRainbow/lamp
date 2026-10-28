@@ -9,6 +9,8 @@ Lamp is an installable web app (a PWA). Once someone opens it in their phone's b
 | `lamp.html` | The whole app. Edit this one. |
 | `sw.js` | The service worker, which keeps Lamp working offline. |
 | `icons/` | App icons: home screen, install prompt and browser tab. |
+| `fonts/` | Lamp's fonts, served with the site so they work offline. |
+| `app/` | The iPhone (App Store) version. See `app/README.md`. |
 | `*.json` | Bibles (KJV, BSB, WEB, Louis Segond 1910), cross-references and Easton's dictionary. |
 | `build.py` | Puts everything together into `site/`. |
 | `site/` | The finished website, built by `build.py`. It isn't stored in Git, because GitHub builds its own copy. |

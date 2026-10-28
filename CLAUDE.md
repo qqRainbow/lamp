@@ -21,15 +21,17 @@ At the start of a session, run `git pull` first, then read the Work log and **Op
 |---|---|
 | `lamp.html` | The whole app: styles, markup, strings and script in one file. Edit this. |
 | `sw.js` | Service worker: offline support and updates (newest page when online, saved copy offline). |
-| `build.py` | Builds `site/` (adds the HTML head, manifest, icons, version date, service worker). |
+| `build.py` | Builds `site/` (adds the HTML head, manifest, icons, fonts, version date, service worker). `build.py app` builds `app/www` for the iPhone app instead. |
 | `site/` | Build output. Not in git; GitHub Actions builds its own copy. |
 | `*.json` | `kjv`, `bsb`, `web`, `lsg` Bibles as `[book][chapter][verse]` text (`""` for verses a version omits); `xref.json` cross-references (OpenBible.info, CC BY); `easton.json` dictionary. |
 | `icons/` | App icons (made in the browser from Lamp's lamp symbol). |
+| `fonts/` | The five fonts as subset `.woff` files (Latin, for English and French) with `fonts.css` and their OFL licences. `build.py` swaps the Google Fonts links in `lamp.html` for `fonts/fonts.css`. |
+| `app/` | The App Store app (Capacitor 8, bundle ID `org.ebn.lamp`): `setup.sh`, Capacitor config, icon and launch screen in `assets/`, and `ios/` once created on the Mac. See `app/README.md`. |
 | `church/` | Poster, slide and QR code for the church. `py church/make.py` rebuilds them (needs `segno` and Microsoft Edge, so it is Windows-specific as written). |
 | `tools/quiz_text.py` | Regenerates `QUIZ_TEXT` (the verse shown after each quiz answer) from the quiz references. |
 | `.github/workflows/pages.yml` | On every push to `main`: run `build.py`, deploy `site/` to GitHub Pages. |
 
-`lamp.html` is also the source of an older copy published as a Claude artifact, which has no document head of its own (`build.py` adds one). Code that checks `window.claude`, and `STANDALONE` (true when the page has a manifest link), keeps that copy working; the website is what matters now.
+`lamp.html` is also the source of an older copy published as a Claude artifact (which still loads Google Fonts, since the links stay in `lamp.html`), which has no document head of its own (`build.py` adds one). Code that checks `window.claude`, and `STANDALONE` (true when the page has a manifest link), keeps that copy working; the website is what matters now.
 
 ## Inside lamp.html
 
@@ -39,6 +41,7 @@ At the start of a session, run `git pull` first, then read the Work log and **Op
 - **Verses:** `remember({ver,b,c,v1,v2,text})` registers a verse so Save, Copy, Share and Read buttons work; `verseCard()` renders one. Books are 0-based (`BOOKS`, `BOOKS_FR`); `parseRef()` reads English or French references.
 - **Louis Segond numbering:** LSG counts psalm titles as verses and numbers a few chapters differently (e.g. Jonah 1:17 = Jonas 2:1, 1 Kings 4:21–34 = 1 Rois 5:1–14, Genesis 32 is shifted by one). Precomputed verse tables (`VERSE_TEXT`, `QUIZ_TEXT`, `START_TEXT`) store an `lsgRef`; avoid references that shift unless you map them.
 - **Quiz:** `QUIZ` items have `level` (`e`, `m`, `h`, `who`), an `at` reference, and `en`/`fr` as `[question, answer, [3 wrong], note?]`; "Who said it?" items add `quote: {en, fr}`, exact excerpts of the KJV and Louis Segond. 247 questions. When adding questions, check every answer against its verse in both Bibles by script, check quotes word for word, then run `tools/quiz_text.py`.
+- **The iPhone app:** `NATIVE` is true inside Capacitor. Then `plugin(name)` returns a Capacitor plugin (Filesystem, Share, LocalNotifications); files leave through `nativeShareFile()` (share sheet); `saveFile()`, `shareText()` and the picture Share button use it; the picture Save button is hidden; `APP_URL` is `PUBLIC_URL`; the reminder card shows an On/Off switch (`lamp.remind.on`) and `scheduleReminders()` schedules the next 30 days' verses (`votdFor(date)`); the home-screen card becomes "Share Lamp".
 - **Other pieces:** badges (`BADGES`, earned from stored data via `queueBadges()` after any `store()`); "Which book?" game; verse pictures (canvas, 12 backgrounds plus the user's own photo, 5 fonts); First steps (`START_LESSONS`, `START_WORDS`); leave-round prompt and "Back to the quiz" side trip; update bar (`window.lampUpdated`).
 
 ## Building and testing
@@ -48,11 +51,15 @@ py build.py                       # or python3 on a Mac
 py -m http.server 8766 --directory site
 ```
 
-Test at phone size (375×812), in English and French, light and dark, and check the console for errors. Claude's built-in browser pane blocks service workers; offline behaviour was tested in headless Edge instead.
+Test at phone size (375×812), in English and French, light and dark, and check the console for errors. The app build can be tried in a browser by serving `app/www` with a pretend `window.Capacitor` (as was done on 2026-10-28); the real test is Xcode's simulator or an iPhone.
+
+The app (on the Mac, in the owner's own Terminal, not Claude's sandbox): `bash app/setup.sh`, then `cd app && npx cap open ios`. Claude's shell on the Mac is a Linux sandbox with no internet and no Xcode, so npm and Xcode steps are the owner's. Claude's built-in browser pane blocks service workers; offline behaviour was tested in headless Edge instead.
 
 ## Next: the App Store
 
 The owner has a Mac and plans to pay for the Apple Developer Program (personal or church account still to decide). Plan agreed so far:
+
+Steps 1–4 are done in code (2026-10-28) and wait for a first run in Xcode.
 
 1. Wrap the built `site/` with **Capacitor** so everything (Bibles, fonts) is bundled in the app and works offline from the first launch. A thin wrapper around the live URL risks rejection under App Store guideline 4.2.
 2. **Self-host the fonts** (Cormorant Garamond, Literata, Figtree, Caveat, Playfair Display; all SIL OFL) instead of Google Fonts, for offline use and a clean privacy label.
@@ -63,6 +70,9 @@ The owner has a Mac and plans to pay for the Apple Developer Program (personal o
 Google Play (TWA via PWABuilder, or the same Capacitor project) is the cheaper sibling; it needs a custom domain for Digital Asset Links and 12 testers for 14 days on a new personal account.
 
 ## Open decisions
+
+- **Bundle ID** decided: `org.ebn.lamp` (EBN is the church). Permanent once uploaded.
+- **App Store name:** plain "Lamp" is probably taken; something like "Lamp – Bible Companion". Not decided.
 
 - **Apple account:** personal (shows the owner's legal name as seller) or the church's (needs a free D-U-N-S number; nonprofits can ask for a fee waiver). Turn on automatic renewal: if the membership lapses, all apps leave the store until it is renewed.
 - **Own domain** (e.g. lampbible.app, about 10–15 € a year): not bought yet. Needed for Google Play; best done before printing many church posters, since the QR code points to the current address (`church/make.py` regenerates everything).
@@ -85,3 +95,4 @@ Newest last. One line per finished piece of work; say what is unfinished.
 - **2026-10-28** "First steps": 8 beginner lessons, a reading guide and 13 key words, in English and French, with a badge.
 - **2026-10-28** Polish pass: one-row verse buttons ("Read"), Find example as a hint, back buttons on Badges and First steps, speech-bubble icon for "Who said it?", Settings → About Lamp (version, privacy, credits), compact quiz page.
 - **2026-10-28** Owner has a Mac and will pay for the Apple Developer Program; App Store plan written above. Added this file and `tools/quiz_text.py`. Next: start the Capacitor iOS version on the Mac.
+- **2026-10-28** App Store version started (Mac): fonts self-hosted in `fonts/` for the website and the app (no more Google Fonts requests on the website; the service worker precaches them); `app/` Capacitor 8 project setup (`setup.sh`, config, 1024 icon, dark launch screen, iPhone only, portrait, photo/camera permission texts); native code in `lamp.html` for the share sheet (backups, pictures, text), daily verse notifications and the "Share Lamp" card; `build.py app`. Fixed stray `$` before French colons in About Lamp. Tested website and app build in a browser with a pretend Capacitor (EN/FR, light/dark, no console errors, no outside requests). Unfinished: the owner installs Xcode and Node, runs `bash app/setup.sh`, then the simulator and a real iPhone; privacy policy page; App Store Connect listing.

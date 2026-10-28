@@ -1,0 +1,16 @@
+{
+  "appId": "org.ebn.lamp",
+  "appName": "Lamp",
+  "webDir": "www",
+  "backgroundColor": "#0e1220",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": true,
+    "backgroundColor": "#0e1220"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#e3b45a"
+    }
+  }
+}

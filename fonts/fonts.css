@@ -1,0 +1,10 @@
+/* Lamp's fonts, served with the app so they work offline and nothing is fetched from Google.
+   All under the SIL Open Font License (see the OFL-*.txt files). Subset to Latin (English and French).
+   build.py puts this file in place of the Google Fonts links. */
+@font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("cormorant-garamond.woff") format("woff"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 300 700; font-display: swap; src: url("cormorant-garamond-italic.woff") format("woff"); }
+@font-face { font-family: "Literata"; font-style: normal; font-weight: 200 900; font-display: swap; src: url("literata.woff") format("woff"); }
+@font-face { font-family: "Literata"; font-style: italic; font-weight: 200 900; font-display: swap; src: url("literata-italic.woff") format("woff"); }
+@font-face { font-family: "Figtree"; font-style: normal; font-weight: 300 900; font-display: swap; src: url("figtree.woff") format("woff"); }
+@font-face { font-family: "Caveat"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("caveat.woff") format("woff"); }
+@font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 400 900; font-display: swap; src: url("playfair-display-italic.woff") format("woff"); }

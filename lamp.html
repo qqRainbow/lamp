@@ -539,11 +539,12 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
         <label for="rtime" data-t="reminder_time"></label>
         <input class="pick" type="time" id="rtime" value="08:00">
       </div>
-      <div class="bar"><a class="btn primary" id="rlink" target="_blank" rel="noopener" data-t="reminder_button"></a><button class="btn" type="button" id="rics" data-t="reminder_ics" hidden></button></div>
+      <div class="setrow" id="rnative" hidden><span data-t="reminder_daily"></span><div class="seg" role="group" id="remind-seg"></div></div>
+      <div class="bar" id="rbar"><a class="btn primary" id="rlink" target="_blank" rel="noopener" data-t="reminder_button"></a><button class="btn" type="button" id="rics" data-t="reminder_ics" hidden></button></div>
       <p class="muted small" id="rnote" data-t="reminder_note"></p>
     </div>
     <div class="settings" id="home-card">
-      <div class="eyebrow" data-t="home_title"></div>
+      <div class="eyebrow" id="home-title" data-t="home_title"></div>
       <p class="muted" style="margin:0" id="home-help" data-t="home_help"></p>
       <div><button class="btn primary" type="button" id="install" data-t="install_app" hidden></button></div>
       <details id="home-ios"><summary>iPhone / iPad</summary><ol data-t="home_ios"></ol></details>
@@ -1892,7 +1893,11 @@ const T = {
     reminder_time: "Remind me at", reminder_button: "Add to Google Calendar",
     reminder_note: "This opens Google Calendar with a daily event that links back to Lamp, so your phone reminds you at that time. Using Apple Calendar or Outlook? Create a daily event there and paste in Lamp's link from below.",
     reminder_event: "Verse of the day (Lamp)", reminder_details: url => `Open Lamp to read today's verse:\n${url}`,
-    home_title: "Add Lamp to your home screen",
+    home_title: "Add Lamp to your home screen", share_title: "Share Lamp",
+    reminder_daily: "Daily notification",
+    reminder_note_app: "Your phone shows the verse of the day at this time. Open Lamp now and then to keep the reminders coming.",
+    reminder_denied: "Notifications are off for Lamp. You can turn them on in the iPhone's Settings, under Lamp.",
+    reminder_on: time => `You'll get the verse of the day at ${time}.`,
     home_help: "Lamp gets its own icon and opens in one tap. It runs in your browser, so stay signed in to Claude.",
     home_ios: `<li>Open Lamp's link in <strong>Safari</strong>. If you're in the Claude app, copy the link below and paste it into Safari.</li><li>Tap the <strong>Share</strong> button (the square with an arrow).</li><li>Tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li>`,
     home_android: `<li>Open Lamp's link in <strong>Chrome</strong>. If you're in the Claude app, copy the link below and paste it into Chrome.</li><li>Tap the <strong>⋮</strong> menu at the top right.</li><li>Tap <strong>Add to Home screen</strong>, then <strong>Add</strong>.</li>`,
@@ -2051,7 +2056,7 @@ const T = {
     start_church: "Faith grows best with others. Bring your questions to a pastor or a Christian friend: no question is too simple.",
     about_title: "About Lamp", about_credits: "Credits",
     about_version: v => `version ${v}`,
-    about_privacy: "No account and no tracking. Your prayers, notes, highlights and progress are kept only on this device; use Back up to keep a copy. Fonts load from Google Fonts.",
+    about_privacy: "No account and no tracking. Your prayers, notes, highlights and progress are kept only on this device; use Back up to keep a copy. Nothing you do in Lamp is sent anywhere.",
     about_list: `<li>King James Version (1769): public domain.</li><li>Berean Standard Bible (BSB): public domain.</li><li>World English Bible (WEB): public domain.</li><li>Louis Segond 1910: public domain.</li><li>Cross-references: OpenBible.info, CC BY.</li><li>Easton's Bible Dictionary (1897): public domain.</li><li>Fonts: Cormorant Garamond, Literata, Figtree, Caveat and Playfair Display, under the SIL Open Font License.</li>`,
     update_ready: "A new version of Lamp is ready.", update_go: "Refresh", update_later: "Not now",
     leave_title: "Leave this round?", leave_go: "Leave", leave_stay: "Keep playing",
@@ -2091,7 +2096,11 @@ const T = {
     reminder_time: "Me le rappeler à", reminder_button: "Ajouter à Google Agenda",
     reminder_note: `Google Agenda s'ouvre avec un événement quotidien qui renvoie vers Lamp, et votre téléphone vous le rappelle à cette heure-là. Vous utilisez Calendrier d'Apple ou Outlook${NB}? Créez-y un événement quotidien et collez-y le lien de Lamp ci-dessous.`,
     reminder_event: "Verset du jour (Lamp)", reminder_details: url => `Ouvrez Lamp pour lire le verset du jour${NB}:\n${url}`,
-    home_title: "Ajouter Lamp à l'écran d'accueil",
+    home_title: "Ajouter Lamp à l'écran d'accueil", share_title: "Partager Lamp",
+    reminder_daily: "Notification quotidienne",
+    reminder_note_app: "Votre téléphone affiche le verset du jour à cette heure-là. Ouvrez Lamp de temps en temps pour que les rappels continuent.",
+    reminder_denied: "Les notifications sont désactivées pour Lamp. Vous pouvez les activer dans les Réglages de l'iPhone, à la rubrique Lamp.",
+    reminder_on: time => `Vous recevrez le verset du jour à ${time}.`,
     home_help: "Lamp a sa propre icône et s'ouvre d'un seul geste. L'appli fonctionne dans votre navigateur, alors restez connecté à Claude.",
     home_ios: `<li>Ouvrez le lien de Lamp dans <strong>Safari</strong>. Si vous êtes dans l'appli Claude, copiez le lien ci-dessous et collez-le dans Safari.</li><li>Touchez le bouton <strong>Partager</strong> (le carré avec une flèche).</li><li>Touchez <strong>Sur l'écran d'accueil</strong>, puis <strong>Ajouter</strong>.</li>`,
     home_android: `<li>Ouvrez le lien de Lamp dans <strong>Chrome</strong>. Si vous êtes dans l'appli Claude, copiez le lien ci-dessous et collez-le dans Chrome.</li><li>Touchez le menu <strong>⋮</strong> en haut à droite.</li><li>Touchez <strong>Ajouter à l'écran d'accueil</strong>, puis <strong>Ajouter</strong>.</li>`,
@@ -2250,8 +2259,8 @@ const T = {
     start_church: "La foi grandit mieux avec d'autres. Posez vos questions à un pasteur ou à un ami chrétien : aucune question n'est trop simple.",
     about_title: "À propos de Lamp", about_credits: "Crédits",
     about_version: v => `version ${v}`,
-    about_privacy: "Pas de compte, aucun suivi. Vos prières, notes, surlignages et progrès sont gardés uniquement sur cet appareil$ ; utilisez la sauvegarde pour en garder une copie. Les polices viennent de Google Fonts.",
-    about_list: `<li>King James Version (1769)$ : domaine public.</li><li>Berean Standard Bible (BSB)$ : domaine public.</li><li>World English Bible (WEB)$ : domaine public.</li><li>Louis Segond 1910$ : domaine public.</li><li>Références croisées$ : OpenBible.info, CC BY.</li><li>Dictionnaire biblique d'Easton (1897)$ : domaine public.</li><li>Polices$ : Cormorant Garamond, Literata, Figtree, Caveat et Playfair Display, sous licence SIL Open Font License.</li>`,
+    about_privacy: "Pas de compte, aucun suivi. Vos prières, notes, surlignages et progrès sont gardés uniquement sur cet appareil ; utilisez la sauvegarde pour en garder une copie. Rien de ce que vous faites dans Lamp n'est envoyé nulle part.",
+    about_list: `<li>King James Version (1769) : domaine public.</li><li>Berean Standard Bible (BSB) : domaine public.</li><li>World English Bible (WEB) : domaine public.</li><li>Louis Segond 1910 : domaine public.</li><li>Références croisées : OpenBible.info, CC BY.</li><li>Dictionnaire biblique d'Easton (1897) : domaine public.</li><li>Polices : Cormorant Garamond, Literata, Figtree, Caveat et Playfair Display, sous licence SIL Open Font License.</li>`,
     update_ready: "Une nouvelle version de Lamp est prête.", update_go: "Actualiser", update_later: "Plus tard",
     leave_title: `Quitter la partie${NB}?`, leave_go: "Quitter", leave_stay: "Continuer",
     back_to_quiz: (i, n) => `‹ Retour au quiz · question ${i} sur ${n}`, back_to_game: (i, n) => `‹ Retour au jeu · question ${i} sur ${n}`,
@@ -2288,6 +2297,27 @@ function load(key, fallback) { try { const v = localStorage.getItem(key); return
 function store(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
   if (key !== "lamp.badges") queueBadges();
+}
+
+// ---------- The App Store app ----------
+// In the iPhone app (built with Capacitor, see app/README.md) Lamp runs from files inside the app. Its web view ignores
+// download links, so files leave through the share sheet ("Save to Files", AirDrop, Messages…).
+const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+// The app build loads Capacitor's scripts (capacitor.js and each plugin's plugin.js), which expose the plugins as globals.
+function plugin(name) {
+  if (!NATIVE) return null;
+  const C = window.Capacitor, umd = window["capacitor" + name];
+  return (umd && umd[name]) || (C.Plugins && C.Plugins[name]) || (C.registerPlugin ? C.registerPlugin(name) : null);
+}
+const blobBase64 = blob => new Promise((done, fail) => {
+  const r = new FileReader(); r.onload = () => done(String(r.result).split(",")[1]); r.onerror = fail; r.readAsDataURL(blob);
+});
+const shareCancelled = err => /cancel/i.test(String(err && (err.message || err.errorMessage || err)));
+// Writes the file to the app's cache, then opens the share sheet with it. Returns false if the person closed the sheet.
+async function nativeShareFile(filename, blob) {
+  const { uri } = await plugin("Filesystem").writeFile({ path: filename, data: await blobBase64(blob), directory: "CACHE" });
+  try { await plugin("Share").share({ files: [uri] }); return true; }
+  catch (err) { if (shareCancelled(err)) return false; throw err; }
 }
 
 // Lowercases and strips accents without changing the string's length, so match positions line up with the original text.
@@ -2517,6 +2547,7 @@ function renderLookControls() {
   seg("#font-seg", "set-font", font, [["classic", t("font_classic"), "font-family:'Cormorant Garamond',serif;font-size:1rem"],
     ["book", t("font_book"), "font-family:Literata,serif"], ["modern", t("font_modern")]]);
   seg("#kids-seg", "set-kids", kids ? "1" : "0", [["0", t("off")], ["1", t("on")]]);
+  seg("#remind-seg", "set-remind", load("lamp.remind.on", false) ? "1" : "0", [["0", t("off")], ["1", t("on")]]);
 }
 $("#s-settings").addEventListener("click", e => {
   const b = e.target.closest("[data-set-look],[data-set-font],[data-set-kids]");
@@ -2560,13 +2591,16 @@ document.addEventListener("click", e => {
 });
 
 // ---------- Today ----------
+// Same verse for everyone on the same calendar day; 37 steps through the list so neighbouring days differ in theme.
+function votdFor(date) {
+  const day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
+  return moodVerse(VERSES[(day * 37) % VERSES.length]);
+}
 function renderToday() {
   const now = new Date(), h = now.getHours();
   $("#greeting").textContent = h < 12 ? t("greet_morning") : h < 18 ? t("greet_afternoon") : t("greet_evening");
   $("#today-date").textContent = now.toLocaleDateString(lang, { weekday: "long", month: "long", day: "numeric" });
-  // Same verse for everyone on the same calendar day; 37 steps through the list so neighbouring days differ in theme.
-  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
-  const v = moodVerse(VERSES[(day * 37) % VERSES.length]);
+  const v = votdFor(now);
   $("#votd").innerHTML = `<div class="eyebrow" style="margin-bottom:8px">${t("votd")}</div>` + verseCard(v, { lit: true });
   const active = activePlans(), streakDays = readingStreak();
   $("#today-plans").innerHTML = active.length
@@ -3435,6 +3469,11 @@ function answerBook(n) {
 // ---------- Sharing ----------
 // The phone's share sheet where there is one; otherwise the text and link are copied for pasting into a message.
 async function shareText(text) {
+  if (NATIVE) {
+    try { await plugin("Share").share({ title: "Lamp", text, url: APP_URL }); countShare(); }
+    catch (err) { if (!shareCancelled(err)) toast(t("toast_nocopy")); }
+    return;
+  }
   if (navigator.share) {
     try { await navigator.share({ title: "Lamp", text, url: APP_URL }); countShare(); return; }
     catch (err) { if (err && err.name === "AbortError") return; }
@@ -3591,6 +3630,7 @@ async function drawPicture() {
 const picBlob = () => new Promise(r => $("#pic-canvas").toBlob(r, "image/png"));
 const picName = () => `lamp-${formatRef(pic.x.b, pic.x.c, pic.x.v1, pic.x.v2).replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}.png`;
 function canShareFiles() {
+  if (NATIVE) return true;
   try { return !!(navigator.canShare && navigator.canShare({ files: [new File([""], "x.png", { type: "image/png" })] })); } catch { return false; }
 }
 function renderPicControls() {
@@ -3607,6 +3647,7 @@ function openPicture(x) {
   loadPicFonts();
   renderPicControls();
   $("#pic-share").hidden = !canShareFiles();
+  $("#pic-save").hidden = NATIVE;  // in the app, the share sheet has Save Image
   $("#picsheet").hidden = false;
   drawPicture();
   $("#pic-close").focus();
@@ -3628,7 +3669,9 @@ $("#picsheet").addEventListener("click", async e => {
     renderPicControls(); drawPicture();
     return;
   }
-  if (e.target.closest("#pic-share")) {
+  if (e.target.closest("#pic-share") && NATIVE) {
+    try { if (await nativeShareFile(picName(), await picBlob())) countShare(); } catch { toast(t("toast_nocopy")); }
+  } else if (e.target.closest("#pic-share")) {
     const file = new File([await picBlob()], picName(), { type: "image/png" });
     try { await navigator.share({ files: [file] }); countShare(); }
     catch (err) { if (!err || err.name !== "AbortError") toast(t("toast_nocopy")); }
@@ -4384,6 +4427,7 @@ $("#backup-save").addEventListener("click", async () => {
   saveFile(filename, text, "application/json");
 });
 function saveFile(filename, text, type) {
+  if (NATIVE) { nativeShareFile(filename, new Blob([text], { type })).catch(() => toast(t("backup_failed"))); return; }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([text], { type }));
   a.download = filename;
@@ -4438,12 +4482,20 @@ $("#restore-preview").addEventListener("click", e => {
 // ---------- Reminder and home screen ----------
 // Lamp's own website links its manifest; inside Claude the page runs in a frame and can't read its own claude.ai address.
 const STANDALONE = !!document.querySelector('link[rel="manifest"]');
-const APP_URL = STANDALONE ? location.origin + location.pathname.replace(/index\.html$/, "") : "https://claude.ai/artifact/4tpcdmg1wGh8VMUUYucnDW";
+const PUBLIC_URL = "https://qqrainbow.github.io/lamp/";  // what the app shares and prints on pictures
+const APP_URL = NATIVE ? PUBLIC_URL : STANDALONE ? location.origin + location.pathname.replace(/index\.html$/, "") : "https://claude.ai/artifact/4tpcdmg1wGh8VMUUYucnDW";
 if (STANDALONE) {
   for (const [id, key] of [["rnote", "reminder_note_site"], ["home-help", "home_help_site"]]) $("#" + id).dataset.t = key;
   $("#home-ios ol").dataset.t = "home_ios_site";
   $("#home-android ol").dataset.t = "home_android_site";
   $("#rics").hidden = false;
+}
+if (NATIVE) {
+  // The app reminds through the phone's own notifications; installing and the Add to home screen steps don't apply.
+  $("#rbar").hidden = true; $("#rnative").hidden = false;
+  $("#rnote").dataset.t = "reminder_note_app";
+  $("#home-title").dataset.t = "share_title";
+  ["#home-help", "#home-ios", "#home-android"].forEach(s => $(s).hidden = true);
 }
 const pad = n => String(n).padStart(2, "0");
 function reminderStart() {
@@ -4500,9 +4552,43 @@ function renderExtras() {
   $("#rlink").href = reminderLink();
   $("#applink").textContent = APP_URL;
   $("#tellfriend").dataset.share = t("share_app");
+  // The app's notifications are written in the current language and Bible, so they're rescheduled when either changes.
+  if (NATIVE && renderExtras.seen !== lang + ver) { renderExtras.seen = lang + ver; scheduleReminders(); }
 }
 $("#rtime").value = load("lamp.remind", "08:00");
-$("#rtime").addEventListener("change", () => { store("lamp.remind", $("#rtime").value); renderExtras(); });
+$("#rtime").addEventListener("change", () => { store("lamp.remind", $("#rtime").value); renderExtras(); scheduleReminders(); });
+
+// App only. lamp.remind.on: the daily notification is switched on. Each notification carries that day's verse, so the
+// next 30 are scheduled ahead (iOS keeps at most 64), and again whenever Lamp opens or its language or Bible changes.
+let remindQueue = Promise.resolve();
+const scheduleReminders = () => remindQueue = remindQueue.then(async () => {
+  const LN = plugin("LocalNotifications");
+  if (!LN) return;
+  const { notifications } = await LN.getPending();
+  if (notifications.length) await LN.cancel({ notifications: notifications.map(n => ({ id: n.id })) });
+  if (!load("lamp.remind.on", false)) return;
+  const first = reminderStart(), list = [];
+  for (let i = 0; i < 30; i++) {
+    const at = new Date(first); at.setDate(first.getDate() + i);
+    const v = votdFor(at);
+    list.push({ id: 1000 + i, title: t("votd"), body: `${t("quote", v.text)} ${formatRef(v.b, v.c, v.v1, v.v2)}`, schedule: { at, allowWhileIdle: true } });
+  }
+  await LN.schedule({ notifications: list });
+}).catch(() => {});
+$("#remind-seg").addEventListener("click", async e => {
+  const b = e.target.closest("[data-set-remind]");
+  if (!b) return;
+  let on = b.dataset.setRemind === "1";
+  if (on) {
+    let granted = false;
+    try { granted = (await plugin("LocalNotifications").requestPermissions()).display === "granted"; } catch {}
+    if (!granted) { on = false; toast(t("reminder_denied"), 4000); }
+  }
+  store("lamp.remind.on", on);
+  renderLookControls();
+  scheduleReminders();
+  if (on) toast(t("reminder_on", $("#rtime").value));
+});
 // Open the steps for the phone this is, if we can tell.
 const ua = navigator.userAgent;
 if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) $("#home-ios").open = true;

@@ -1,0 +1,21 @@
+{
+  "name": "lamp-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lamp for the App Store: the website's files bundled into an iPhone app with Capacitor.",
+  "scripts": {
+    "build": "cd .. && python3 build.py app",
+    "sync": "npm run build && npx cap sync ios",
+    "open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/local-notifications": "^8.0.0",
+    "@capacitor/share": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}

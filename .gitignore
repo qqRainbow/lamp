@@ -4,3 +4,5 @@ __pycache__/
 lamp.backup*.html
 lamp-test.html
 .claude/
+app/node_modules/
+app/www/
