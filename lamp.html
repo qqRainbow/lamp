@@ -340,6 +340,24 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .chapter-text .v sup { font-family: var(--font-ui); font-size: .58em; font-weight: 700; color: var(--gold); margin-right: 3px; }
 .chapter-text .v.sel { background: var(--gold-soft); box-shadow: 0 2px 0 var(--gold); }
 .chapter-text .v.flash { background: var(--gold-soft); }
+.chapter-text .v.speaking { background: var(--gold-soft); box-shadow: 0 2px 0 var(--gold); }
+/* Read aloud: the Listen button in the reader, and the player above the tab bar while it reads. */
+.compare .listen-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+.listen-btn svg, #listen svg { width: 16px; height: 16px; fill: currentColor; }
+#listen {
+  position: fixed; left: 0; right: 0; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+  display: flex; justify-content: center; padding-inline: 16px; pointer-events: none;
+}
+body:has(#quiz-back:not([hidden])) #listen { bottom: calc(136px + env(safe-area-inset-bottom, 0px)); }
+#listen .player {
+  pointer-events: auto; display: flex; align-items: center; gap: 6px; width: 100%; max-width: 440px;
+  background: var(--ink); color: var(--bg); border-radius: 999px; padding: 6px 6px 6px 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+}
+#listen .player button { border: 0; background: none; color: inherit; font: 600 .85rem var(--font-ui); border-radius: 999px; min-width: 38px; height: 38px; display: grid; place-items: center; padding: 0 8px; }
+#listen .player .main { background: var(--gold); color: #1a1408; }
+#listen .player span { flex: 1; min-width: 0; font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body:has(#listen:not([hidden])) .toast { bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
+body:has(#listen:not([hidden])) main { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 .chapter-text .v { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .hl-y { background: var(--hl-y); } .hl-g { background: var(--hl-g); } .hl-b { background: var(--hl-b); } .hl-p { background: var(--hl-p); }
 .nmark { font-family: var(--font-ui); font-size: .6em; color: var(--gold); margin-right: 3px; vertical-align: super; }
@@ -557,6 +575,11 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
       <div class="setrow" id="rnative" hidden><span data-t="reminder_daily"></span><div class="seg" role="group" id="remind-seg"></div></div>
       <div class="bar" id="rbar"><a class="btn primary" id="rlink" target="_blank" rel="noopener" data-t="reminder_button"></a><button class="btn" type="button" id="rics" data-t="reminder_ics" hidden></button></div>
       <p class="muted small" id="rnote" data-t="reminder_note"></p>
+      <div id="enative" hidden>
+        <div class="setrow"><span data-t="reminder_evening"></span><div class="seg" role="group" id="evening-seg"></div></div>
+        <div class="setrow"><label for="etime" data-t="evening_time"></label><input class="pick" type="time" id="etime" value="20:00"></div>
+        <p class="muted small" data-t="evening_note"></p>
+      </div>
     </div>
     <div class="settings" id="home-card">
       <div class="eyebrow" id="home-title" data-t="home_title"></div>
@@ -618,6 +641,10 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
   <!-- BIBLE -->
   <section class="screen" id="s-bible" hidden>
     <div id="quiz-back" hidden><button class="btn primary" type="button" data-go="quiz"></button></div>
+    <div id="listen" hidden><div class="player" role="group" data-t-label="listen">
+      <button type="button" class="main" id="listen-toggle"></button><span id="listen-what" aria-live="polite"></span>
+      <button type="button" id="listen-rate" data-t-label="listen_speed"></button><button type="button" id="listen-stop" data-t-label="listen_stop">✕</button>
+    </div></div>
     <div id="bible-top" class="screen" style="gap:14px">
       <header class="top">
         <span class="eyebrow" id="bible-version-name"></span>
@@ -1910,6 +1937,12 @@ const T = {
     reminder_event: "Verse of the day (Lamp)", reminder_details: url => `Open Lamp to read today's verse:\n${url}`,
     home_title: "Add Lamp to your home screen", share_title: "Share Lamp",
     reminder_daily: "Daily notification", pic_store: "Free on the App Store",
+    reminder_evening: "Evening streak reminder", evening_time: "Remind me at",
+    evening_note: "Only on days when you haven't read or played yet.",
+    evening_title: "Your streak is waiting 🔥", evening_body: "Read a chapter or play a quiz to keep it going today.",
+    evening_on: time => `If you haven't read or played by ${time}, Lamp will remind you.`,
+    listen: "Listen", listen_play: "Play", listen_pause: "Pause", listen_stop: "Stop reading", listen_speed: "Reading speed",
+    listen_at: (name, n) => `${name} · verse ${n}`, listen_novoice: "This device has no voice for this language.",
     reminder_note_app: "Your phone shows the verse of the day at this time. Open Lamp now and then to keep the reminders coming.",
     reminder_denied: "Notifications are off for Lamp. You can turn them on in the iPhone's Settings, under Lamp.",
     reminder_on: time => `You'll get the verse of the day at ${time}.`,
@@ -2117,6 +2150,12 @@ const T = {
     reminder_event: "Verset du jour (Lamp)", reminder_details: url => `Ouvrez Lamp pour lire le verset du jour${NB}:\n${url}`,
     home_title: "Ajouter Lamp à l'écran d'accueil", share_title: "Partager Lamp",
     reminder_daily: "Notification quotidienne", pic_store: "Gratuit sur l’App Store",
+    reminder_evening: "Rappel du soir pour la série", evening_time: "Me le rappeler à",
+    evening_note: "Seulement les jours où vous n'avez encore rien lu ni joué.",
+    evening_title: "Votre série vous attend 🔥", evening_body: "Lisez un chapitre ou faites un quiz pour la continuer aujourd'hui.",
+    evening_on: time => `Si vous n'avez rien lu ni joué à ${time}, Lamp vous le rappellera.`,
+    listen: "Écouter", listen_play: "Lecture", listen_pause: "Pause", listen_stop: "Arrêter la lecture", listen_speed: "Vitesse de lecture",
+    listen_at: (name, n) => `${name} · verset ${n}`, listen_novoice: "Cet appareil n'a pas de voix pour cette langue.",
     reminder_note_app: "Votre téléphone affiche le verset du jour à cette heure-là. Ouvrez Lamp de temps en temps pour que les rappels continuent.",
     reminder_denied: "Les notifications sont désactivées pour Lamp. Vous pouvez les activer dans les Réglages de l'iPhone, à la rubrique Lamp.",
     reminder_on: time => `Vous recevrez le verset du jour à ${time}.`,
@@ -2497,6 +2536,7 @@ function show(tab, leaving = false) {
     if (!quiz.over) { askLeave(() => { endRound(); show(tab, true); }); return; }
     endRound();
   }
+  if (tab !== "bible" && listen.on) stopListening();
   TABS.forEach(n => { $("#s-" + n).hidden = n !== tab; });
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
   clearSelection();
@@ -2575,6 +2615,7 @@ function renderLookControls() {
     ["book", t("font_book"), "font-family:Literata,serif"], ["modern", t("font_modern")]]);
   seg("#kids-seg", "set-kids", kids ? "1" : "0", [["0", t("off")], ["1", t("on")]]);
   seg("#remind-seg", "set-remind", load("lamp.remind.on", false) ? "1" : "0", [["0", t("off")], ["1", t("on")]]);
+  seg("#evening-seg", "set-evening", load("lamp.evening.on", false) ? "1" : "0", [["0", t("off")], ["1", t("on")]]);
 }
 $("#s-settings").addEventListener("click", e => {
   const b = e.target.closest("[data-set-look],[data-set-font],[data-set-kids]");
@@ -2780,6 +2821,7 @@ function openChapter(b, c, v = null, plan = null) {
 }
 
 async function drawBible() {
+  if (listen.on && !listen.turning && (rd.view !== "read" || rd.b !== listen.b || rd.c !== listen.c || ver !== listen.ver)) stopListening();
   const body = $("#bible-body"), trip = quiz && quiz.trip;
   $("#quiz-back").hidden = !trip;
   if (trip) $("#quiz-back button").textContent = t(quiz.kind ? "back_to_game" : "back_to_quiz", quiz.i + 1, ROUND);
@@ -2845,6 +2887,7 @@ function readHTML(bible) {
         ${Object.entries(VERSIONS).filter(([k]) => k !== ver)
           .map(([k, v]) => `<option value="${k}"${k === cmpVer() ? " selected" : ""}>${v.short} · ${v.name}</option>`).join("")}
       </select>
+      ${TTS ? `<button class="btn listen-btn" type="button" data-listen>${SPEAKER}${t("listen")}</button>` : ""}
     </div>
     ${cmpVer() ? parallelHTML(bible, bibles[cmpVer()], cmpVer()) : `<div class="chapter-text" lang="${VERSIONS[ver].lang}" style="--scale:${scale}">${
       verses.map((x, i) => { if (!x) return ""; const d = verseDeco(ver, i);
@@ -2888,6 +2931,105 @@ $("#s-bible").addEventListener("change", e => {
   drawBible();
 });
 
+// ---------- Read aloud ----------
+// The phone's own voices (Web Speech), offline, in the language of the Bible being read. A chapter is queued verse by
+// verse, so the verse being read can be marked; at the end Lamp turns the page and carries on with the next chapter.
+// Pause cancels and remembers the verse, since resuming paused speech is unreliable on iPhones.
+const TTS = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window ? speechSynthesis : null;
+const SPEAKER = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+const PLAY = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>`;
+const PAUSE = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>`;
+const RATES = [0.8, 1, 1.25];
+const listen = { on: false, playing: false, turning: false, b: 0, c: 0, ver: "kjv", i: 0, token: 0, rate: load("lamp.listen.rate", 1) };
+function pickVoice(lang) {
+  const all = TTS.getVoices().filter(v => v.lang.toLowerCase().replace("_", "-").startsWith(lang));
+  const home = lang === "fr" ? /^fr-(FR|BE)/i : /^en-(US|GB)/i;
+  // A voice from France/Belgium (or the US/UK) first, then the better-quality ones, then voices on the phone itself.
+  const score = v => (home.test(v.lang.replace("_", "-")) ? 8 : 0) + (/premium|enhanced|natural|neural/i.test(v.name) ? 4 : 0) + (v.localService ? 2 : 0) + (v.default ? 1 : 0);
+  return all.sort((a, b) => score(b) - score(a))[0] || null;
+}
+if (TTS) { TTS.getVoices(); TTS.addEventListener?.("voiceschanged", () => {}); }  // asks the phone to load its voices early
+// If the phone's speech engine refuses, reading stops with a message rather than hanging.
+function sayFrom(i) {
+  try { speakFrom(i); } catch { stopListening(); toast(t("listen_novoice"), 3000); }
+}
+function speakFrom(i) {
+  const token = ++listen.token;
+  TTS.cancel();
+  const verses = bibles[listen.ver][listen.b][listen.c], lang = VERSIONS[listen.ver].lang, voice = pickVoice(lang);
+  const say = (text, onstart, onend) => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = voice ? voice.lang : lang === "fr" ? "fr-FR" : "en-US";
+    if (voice) u.voice = voice;
+    u.rate = listen.rate;
+    u.onstart = () => { if (token === listen.token && onstart) onstart(); };
+    u.onend = () => { if (token === listen.token && onend) onend(); };
+    TTS.speak(u);
+  };
+  // The chapter's name first, in the Bible's own language ("Psaumes 23").
+  const book = listen.b === PSALMS ? T[lang].psalm : (lang === "fr" ? BOOKS_FR : BOOKS)[listen.b];
+  if (i === 0) say(`${book} ${listen.c + 1}`, () => markSpeaking(0));
+  const left = verses.map((x, k) => [x, k]).filter(([x, k]) => x && k >= i);
+  if (!left.length) { nextChapterAloud(); return; }
+  left.forEach(([x, k], n) => say(x, () => { listen.i = k; markSpeaking(k); }, n === left.length - 1 ? nextChapterAloud : null));
+  listen.playing = true;
+  renderPlayer();
+}
+function markSpeaking(k) {
+  document.querySelectorAll("#bible-body .v.speaking").forEach(el => el.classList.remove("speaking"));
+  const el = document.querySelector(`#bible-body .v[data-v="${k}"][data-ver="${listen.ver}"]`);
+  if (el && !$("#s-bible").hidden) { el.classList.add("speaking"); if (k > 0) el.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  renderPlayer();
+}
+function renderPlayer() {
+  $("#listen").hidden = !listen.on;
+  if (!listen.on) return;
+  const tg = $("#listen-toggle");
+  tg.innerHTML = listen.playing ? PAUSE : PLAY;
+  tg.setAttribute("aria-label", t(listen.playing ? "listen_pause" : "listen_play"));
+  $("#listen-what").textContent = t("listen_at", chapterName(listen.b, listen.c), listen.i + 1);
+  $("#listen-rate").textContent = String(listen.rate).replace(".", lang === "fr" ? "," : ".") + "×";
+}
+async function startListening(i = 0) {
+  if (!TTS) return;
+  if (!pickVoice(VERSIONS[ver].lang)) toast(t("listen_novoice"), 3000);
+  Object.assign(listen, { on: true, b: rd.b, c: rd.c, ver, i });
+  try { await loadBible(ver); } catch { stopListening(); toast(t("load_failed")); return; }
+  sayFrom(i);
+}
+function pauseListening() { listen.token++; TTS.cancel(); listen.playing = false; renderPlayer(); }
+function stopListening() {
+  listen.token++; if (TTS) TTS.cancel();
+  Object.assign(listen, { on: false, playing: false, turning: false });
+  document.querySelectorAll("#bible-body .v.speaking").forEach(el => el.classList.remove("speaking"));
+  renderPlayer();
+}
+// End of a chapter: open the next one in the reader and keep reading; the last chapter of Revelation ends it.
+async function nextChapterAloud() {
+  const bible = bibles[listen.ver];
+  const next = listen.c < bible[listen.b].length - 1 ? [listen.b, listen.c + 1] : listen.b < BOOKS.length - 1 ? [listen.b + 1, 0] : null;
+  if (!next) { stopListening(); return; }
+  listen.turning = true;
+  [listen.b, listen.c] = next; listen.i = 0;
+  if (!$("#s-bible").hidden && rd.view === "read") {
+    Object.assign(rd, { view: "read", b: next[0], c: next[1], v: null, plan: null });
+    saveReader(); scrollTo(0, 0);
+    await drawBible();
+  }
+  listen.turning = false;
+  if (listen.on) sayFrom(0);
+}
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-listen]")) { if (listen.on && listen.b === rd.b && listen.c === rd.c) { if (!listen.playing) sayFrom(listen.i); } else startListening(0); }
+  else if (e.target.closest("#listen-toggle")) { if (listen.playing) pauseListening(); else sayFrom(listen.i); }
+  else if (e.target.closest("#listen-stop")) stopListening();
+  else if (e.target.closest("#listen-rate")) {
+    listen.rate = RATES[(RATES.indexOf(listen.rate) + 1) % RATES.length] ?? 1;
+    store("lamp.listen.rate", listen.rate);
+    if (listen.playing) sayFrom(listen.i); else renderPlayer();
+  }
+});
+
 // The streak counts a chapter once its last verse has been on screen (above the tab bar).
 let endWatch = null;
 function watchChapterEnd() {
@@ -2907,6 +3049,7 @@ function watchChapterEnd() {
   endWatch.observe(end);
 }
 function afterRead() {
+  if (listen.on) markSpeaking(listen.i);
   store("lamp.lastread", { b: rd.b, c: rd.c });
   watchChapterEnd();
   // Chapters opened, as "book.chapter", for the reading badges.
@@ -3174,6 +3317,7 @@ function markActive() {
 function streakMoved(before, delay = 0) {
   if (before || !activeToday()) return;
   renderStreak();
+  if (NATIVE) scheduleReminders();
   const n = currentStreak().n;
   streakToastUntil = Date.now() + delay + 2600;  // a new badge waits until this has been read
   setTimeout(() => toast(t("streak_up", n), 2600), delay);
@@ -4604,7 +4748,7 @@ if (STANDALONE) {
 }
 if (NATIVE) {
   // The app reminds through the phone's own notifications; installing and the Add to home screen steps don't apply.
-  $("#rbar").hidden = true; $("#rnative").hidden = false;
+  $("#rbar").hidden = true; $("#rnative").hidden = false; $("#enative").hidden = false;
   $("#rnote").dataset.t = "reminder_note_app";
   $("#home-title").dataset.t = "share_title";
   ["#home-help", "#home-ios", "#home-android"].forEach(s => $(s).hidden = true);
@@ -4680,15 +4824,45 @@ const scheduleReminders = () => remindQueue = remindQueue.then(async () => {
   if (!LN) return;
   const { notifications } = await LN.getPending();
   if (notifications.length) await LN.cancel({ notifications: notifications.map(n => ({ id: n.id })) });
-  if (!load("lamp.remind.on", false)) return;
-  const first = reminderStart(), list = [];
-  for (let i = 0; i < 30; i++) {
-    const at = new Date(first); at.setDate(first.getDate() + i);
-    const v = votdFor(at);
-    list.push({ id: 1000 + i, title: t("votd"), body: `${t("quote", v.text)} ${formatRef(v.b, v.c, v.v1, v.v2)}`, schedule: { at, allowWhileIdle: true } });
+  const list = [];
+  if (load("lamp.remind.on", false)) {
+    const first = reminderStart();
+    for (let i = 0; i < 30; i++) {
+      const at = new Date(first); at.setDate(first.getDate() + i);
+      const v = votdFor(at);
+      list.push({ id: 1000 + i, title: t("votd"), body: `${t("quote", v.text)} ${formatRef(v.b, v.c, v.v1, v.v2)}`, schedule: { at, allowWhileIdle: true } });
+    }
   }
-  await LN.schedule({ notifications: list });
+  // The evening reminder: every evening for 30 days, except today once something has counted for the streak.
+  // It's rescheduled whenever today starts counting and whenever Lamp comes back on screen.
+  if (load("lamp.evening.on", false)) {
+    const [h, m] = ($("#etime").value || "20:00").split(":").map(Number), now = new Date(), doneToday = activeToday();
+    for (let i = 0; i < 30; i++) {
+      const at = new Date(now); at.setDate(now.getDate() + i); at.setHours(h, m, 0, 0);
+      if (at <= now || (i === 0 && doneToday)) continue;
+      list.push({ id: 2000 + i, title: t("evening_title"), body: t("evening_body"), schedule: { at, allowWhileIdle: true } });
+    }
+  }
+  if (list.length) await LN.schedule({ notifications: list });
 }).catch(() => {});
+async function askNotifications() {
+  let granted = false;
+  try { granted = (await plugin("LocalNotifications").requestPermissions()).display === "granted"; } catch {}
+  if (!granted) toast(t("reminder_denied"), 4000);
+  return granted;
+}
+$("#evening-seg").addEventListener("click", async e => {
+  const b = e.target.closest("[data-set-evening]");
+  if (!b) return;
+  const on = b.dataset.setEvening === "1" && await askNotifications();
+  store("lamp.evening.on", on);
+  renderLookControls();
+  scheduleReminders();
+  if (on) toast(t("evening_on", $("#etime").value), 3200);
+});
+$("#etime").value = load("lamp.evening", "20:00");
+$("#etime").addEventListener("change", () => { store("lamp.evening", $("#etime").value); scheduleReminders(); });
+if (NATIVE) document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") scheduleReminders(); });
 $("#remind-seg").addEventListener("click", async e => {
   const b = e.target.closest("[data-set-remind]");
   if (!b) return;
