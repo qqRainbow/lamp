@@ -4786,7 +4786,7 @@ $("#restore-preview").addEventListener("click", e => {
 const STANDALONE = !!document.querySelector('link[rel="manifest"]');
 // The app links to its App Store page, never to the website. Fill this in once App Store Connect gives Lamp its id
 // (e.g. "https://apps.apple.com/app/id1234567890"). While it's empty, the app shares without a link.
-const STORE_URL = "";
+const STORE_URL = "https://apps.apple.com/app/id6828325687";
 const APP_URL = NATIVE ? STORE_URL : STANDALONE ? location.origin + location.pathname.replace(/index\.html$/, "") : "https://claude.ai/artifact/4tpcdmg1wGh8VMUUYucnDW";
 if (STANDALONE) {
   for (const [id, key] of [["rnote", "reminder_note_site"], ["home-help", "home_help_site"]]) $("#" + id).dataset.t = key;

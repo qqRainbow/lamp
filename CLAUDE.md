@@ -27,6 +27,7 @@ At the start of a session, run `git pull` first, then read the Work log and **Op
 | `privacy.html` | Privacy policy and support page (EN/FR, picks French from the browser or `?lang=fr`), published as `/privacy.html` for the App Store listing. The contact appears once `CONTACT_EMAIL` is set in `build.py`. |
 | `icons/` | App icons (made in the browser from Lamp's lamp symbol). |
 | `fonts/` | The five fonts as subset `.woff` files (Latin, for English and French) with `fonts.css` and their OFL licences. `build.py` swaps the Google Fonts links in `lamp.html` for `fonts/fonts.css`. |
+| `app/listing.md` | The App Store listing text (EN/FR), ready to paste into App Store Connect. |
 | `app/` | The App Store app (Capacitor 8, bundle ID `org.ebn.lamp`): `setup.sh`, Capacitor config, icon and launch screen in `assets/`, and `ios/` once created on the Mac. See `app/README.md`. |
 | `church/` | Poster, slide and QR code for the church. `py church/make.py` rebuilds them (needs `segno` and Microsoft Edge, so it is Windows-specific as written). |
 | `tools/quiz_text.py` | Regenerates `QUIZ_TEXT` (the verse shown after each quiz answer) from the quiz references. |
@@ -76,7 +77,7 @@ Google Play (TWA via PWABuilder, or the same Capacitor project) is the cheaper s
 ## Open decisions
 
 - **Bundle ID** decided: `org.ebn.lamp` (EBN is the church). Permanent once uploaded.
-- **App Store name:** plain "Lamp" is probably taken; something like "Lamp – Bible Companion". Not decided.
+- **App Store name:** decided 2026-10-29: **Lamp: Bible** (plain "Lamp" was taken). French listing: "Lamp : Bible". The home-screen name stays "Lamp".
 
 - **Apple account:** decided 2026-10-28: personal (shows the owner's legal name as seller); app transfer to a church account stays possible. Was: personal or the church's (needs a free D-U-N-S number; nonprofits can ask for a fee waiver). Turn on automatic renewal: if the membership lapses, all apps leave the store until it is renewed.
 - **Own domain** (e.g. lampbible.app, about 10–15 € a year): not bought yet. Needed for Google Play; best done before printing many church posters, since the QR code points to the current address (`church/make.py` regenerates everything).
@@ -114,3 +115,6 @@ Newest last. One line per finished piece of work; say what is unfinished.
 - **2026-10-29** 17 new badges (39 in all): 100- and 365-day streaks, 30 questions of the day, perfect Hard, perfect timed, every game played, 500 chapters, all Psalms, the four Gospels, the New Testament, the whole Bible, 3 plans, 10 prayers, 5 answered, 10 verses learned, all kids' stories, 10 shares. Reading badges count chapters opened (`lamp.chapters`), as before; the streak counts chapters read to the end.
 - **2026-10-29** Read aloud in the Bible reader (phone voices, EN/FR, verse highlighting, next chapter, pause, speed) and, in the app, an evening streak reminder that skips days already counted. Tested in a browser with a pretend voice and a pretend iPhone. Still to check on the iPhone: the voices themselves, and that reading stops when the screen locks (WKWebView); a keep-awake option could follow.
 - **2026-10-29** Verse sheet redesigned (`#selbar`): docked to the bottom like an iOS sheet, reference with a version chip, bigger colour swatches with a ✓, and 8 icon actions in a 4×2 grid (Save, Note, Copy, Share, Pray, Study, Memorize, Listen). New: Memorize and "Listen from this verse" straight from the sheet. Icons fill in from `ICONS` via `data-icon`.
+- **2026-10-29** Owner's personal Apple Developer Program membership accepted. Next: auto-renewal, create Lamp in App Store Connect (bundle ID org.ebn.lamp), set `STORE_URL`, archive and upload to TestFlight.
+- **2026-10-29** App created in App Store Connect as "Lamp: Bible" (Full Access). Next: put its Apple ID into `STORE_URL`, write the listing (subtitle, descriptions EN/FR, keywords), screenshots, upload a build.
+- **2026-10-29** Lamp's Apple ID is 6828325687: `STORE_URL` set to https://apps.apple.com/app/id6828325687 (the link only works once Lamp is released). Listing text written in `app/listing.md` (name, subtitle, promo text, keywords, descriptions EN/FR, category Reference/Education, 4+, Data Not Collected).
