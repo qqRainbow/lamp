@@ -77,6 +77,8 @@ Google Play (TWA via PWABuilder, or the same Capacitor project) is the cheaper s
 
 ## Open decisions
 
+- **App Store header and search results image** (optional, iOS 27+, 16:9 5244×2950 PNG works for both, per language): skipped for launch; can be made later in Lamp's look.
+
 - **Bundle ID** decided: `org.ebn.lamp` (EBN is the church). Permanent once uploaded.
 - **App Store name:** decided 2026-10-29: **Lamp: Bible** (plain "Lamp" was taken). French listing: "Lamp : Bible". The home-screen name stays "Lamp".
 
@@ -120,3 +122,6 @@ Newest last. One line per finished piece of work; say what is unfinished.
 - **2026-10-29** App created in App Store Connect as "Lamp: Bible" (Full Access). Next: put its Apple ID into `STORE_URL`, write the listing (subtitle, descriptions EN/FR, keywords), screenshots, upload a build.
 - **2026-10-29** Lamp's Apple ID is 6828325687: `STORE_URL` set to https://apps.apple.com/app/id6828325687 (the link only works once Lamp is released). Listing text written in `app/listing.md` (name, subtitle, promo text, keywords, descriptions EN/FR, category Reference/Education, 4+, Data Not Collected).
 - **2026-10-29** App Store screenshots made (7 per language: Today, Find, read aloud, verse sheet, quiz, verse picture, badges; headline above a framed screen, 6.9" size). Files in `app/screenshots/en` and `fr` on the Mac (ignored by git); scripts kept beside them.
+- **2026-10-29** First build archived and uploaded from Xcode; Lamp works through TestFlight on the owner's iPhone. App Store Connect listing, screenshots, privacy and age rating filled in. Next: TestFlight with church members, then submit for review. For each later update: raise the version/build number in Xcode, `bash app/setup.sh`, Archive, Upload.
+- **2026-10-29** Security check: booby-trapped text loaded the way a tampered backup would (prayers, notes, saved, memory, plans, badges) never ran on any screen; everything user-written goes through `esc()`. Keep doing that for any new screen. Account safety (GitHub 2FA, Apple ID, the Mac's GitHub token) discussed with the owner; no backup-privacy line added (owner's choice).
+- **2026-10-29** Lamp 1.0 submitted to App Review ("Waiting for Review"). Lessons: App Privacy answers count only after **Publish**; untick "Sign-in required" in App Review Information (Lamp has no accounts). After approval: update the church poster/QR to mention the App Store, consider the header image.
