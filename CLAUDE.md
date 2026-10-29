@@ -27,6 +27,7 @@ At the start of a session, run `git pull` first, then read the Work log and **Op
 | `privacy.html` | Privacy policy and support page (EN/FR, picks French from the browser or `?lang=fr`), published as `/privacy.html` for the App Store listing. The contact appears once `CONTACT_EMAIL` is set in `build.py`. |
 | `icons/` | App icons (made in the browser from Lamp's lamp symbol). |
 | `fonts/` | The five fonts as subset `.woff` files (Latin, for English and French) with `fonts.css` and their OFL licences. `build.py` swaps the Google Fonts links in `lamp.html` for `fonts/fonts.css`. |
+| `app/screenshots/` | App Store screenshots, `en/` and `fr/` (7 each, 1320×2868, not in git), and the two Playwright scripts that made them from the app build with sample data. |
 | `app/listing.md` | The App Store listing text (EN/FR), ready to paste into App Store Connect. |
 | `app/` | The App Store app (Capacitor 8, bundle ID `org.ebn.lamp`): `setup.sh`, Capacitor config, icon and launch screen in `assets/`, and `ios/` once created on the Mac. See `app/README.md`. |
 | `church/` | Poster, slide and QR code for the church. `py church/make.py` rebuilds them (needs `segno` and Microsoft Edge, so it is Windows-specific as written). |
@@ -118,3 +119,4 @@ Newest last. One line per finished piece of work; say what is unfinished.
 - **2026-10-29** Owner's personal Apple Developer Program membership accepted. Next: auto-renewal, create Lamp in App Store Connect (bundle ID org.ebn.lamp), set `STORE_URL`, archive and upload to TestFlight.
 - **2026-10-29** App created in App Store Connect as "Lamp: Bible" (Full Access). Next: put its Apple ID into `STORE_URL`, write the listing (subtitle, descriptions EN/FR, keywords), screenshots, upload a build.
 - **2026-10-29** Lamp's Apple ID is 6828325687: `STORE_URL` set to https://apps.apple.com/app/id6828325687 (the link only works once Lamp is released). Listing text written in `app/listing.md` (name, subtitle, promo text, keywords, descriptions EN/FR, category Reference/Education, 4+, Data Not Collected).
+- **2026-10-29** App Store screenshots made (7 per language: Today, Find, read aloud, verse sheet, quiz, verse picture, badges; headline above a framed screen, 6.9" size). Files in `app/screenshots/en` and `fr` on the Mac (ignored by git); scripts kept beside them.
