@@ -214,6 +214,13 @@ textarea:focus { outline: none; border-color: var(--gold); }
 .tile b { font-size: .98rem; line-height: 1.25; }
 .tile small { color: var(--muted); font-size: .82rem; line-height: 1.3; overflow-wrap: anywhere; }
 .tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+/* The streak on Today: the flame fills in once today counts. */
+.streak { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+.streak .ic { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 12px; background: var(--gold-soft); color: var(--gold); }
+.streak.lit .ic svg { fill: currentColor; }
+.streak span:last-child { display: grid; gap: 2px; min-width: 0; }
+.streak b { font-size: 1rem; line-height: 1.25; }
+.streak small { color: var(--muted); font-size: .84rem; line-height: 1.35; }
 /* First steps: numbered lessons, ticked when done */
 .lessons { display: flex; flex-direction: column; gap: 10px; }
 .lesson {
@@ -495,6 +502,7 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
       <span class="eyebrow" id="today-date"></span>
       <h1 id="greeting"></h1>
     </header>
+    <div id="streak" class="streak"></div>
     <div id="votd"></div>
     <div id="today-plans" class="planlist"></div>
     <div id="today-stories" class="planlist"></div>
@@ -2016,7 +2024,12 @@ const T = {
     day_of: (d, n) => `Day ${d} of ${n}`, on_track: "On track", behind: n => `${n} ${n === 1 ? "day" : "days"} behind`,
     read_today: "Read today's chapters", stop_plan: "Stop this plan", stop_confirm: "Tap again to stop and lose your progress",
     finished: "Finished", start_again: "Start again", plan_done_all: "Plan complete. Well done!",
-    streak: n => `Reading streak: ${n} ${n === 1 ? "day" : "days"} in a row`,
+    streak_days: n => `${n}-day streak`, streak_none: "Start a streak",
+    streak_how: "Read a chapter to the end or finish a quiz today.",
+    streak_keep: "Read a chapter to the end or finish a quiz to keep it going today.",
+    streak_rest: "Yesterday was your rest day (one a week). Read or play a quiz today to keep your streak.",
+    streak_done: "Done for today. See you tomorrow!",
+    streak_up: n => n === 1 ? "🔥 Streak started! Come back tomorrow." : `🔥 ${n}-day streak!`,
     plan_step: (i, n) => `Chapter ${i} of ${n}`, next_chapter: c => `Next: ${c} ›`, mark_day: d => `Mark day ${d} as read`,
     toast_day: d => `Day ${d} done`, today_reading: "Today's reading", read: "Read",
     plan_teaser: `<strong>Read a little every day.</strong> <span class="muted">Pick a reading plan and Lamp will show you today's chapters here.</span>`,
@@ -2036,7 +2049,6 @@ const T = {
     timed_mode: "Timed mode", timed: "Timed", times_up: "Time's up!",
     timed_help: n => `${n} seconds per question. Answer before the lamp burns out!`,
     daily_title: "Question of the day", daily_done: "Come back tomorrow for a new question.",
-    daily_streak: n => n ? `${n} ${n === 1 ? "day" : "days"} in a row` : "Answer to start a streak",
     tile_quiz_daily: "Today's question is waiting",
     pic_title: "Share this verse", pic_preview: "Picture of the verse", pic_style: "Picture style", pic_shape: "Picture shape",
     pic_square: "Square", pic_story: "Story", pic_share: "Share picture", pic_save: "Save picture", pic_text: "Share as text",
@@ -2219,7 +2231,12 @@ const T = {
     day_of: (d, n) => `Jour ${d} sur ${n}`, on_track: "À jour", behind: n => `${n} ${n === 1 ? "jour" : "jours"} de retard`,
     read_today: "Lire les chapitres du jour", stop_plan: "Arrêter ce plan", stop_confirm: "Touchez encore pour arrêter et perdre votre progression",
     finished: "Terminé", start_again: "Recommencer", plan_done_all: `Plan terminé. Bravo${NB}!`,
-    streak: n => `Série de lecture${NB}: ${n} ${n === 1 ? "jour" : "jours"} de suite`,
+    streak_days: n => `${n} ${n > 1 ? "jours" : "jour"} de suite`, streak_none: "Commencez une série",
+    streak_how: "Lisez un chapitre jusqu'au bout ou terminez un quiz aujourd'hui.",
+    streak_keep: "Lisez un chapitre jusqu'au bout ou terminez un quiz aujourd'hui pour la continuer.",
+    streak_rest: `Hier était votre jour de repos (un par semaine). Lisez ou faites un quiz aujourd'hui pour garder votre série.`,
+    streak_done: `C'est fait pour aujourd'hui. À demain${NB}!`,
+    streak_up: n => n === 1 ? `🔥 Série commencée${NB}! Revenez demain.` : `🔥 ${n} jours de suite${NB}!`,
     plan_step: (i, n) => `Chapitre ${i} sur ${n}`, next_chapter: c => `Suivant${NB}: ${c} ›`, mark_day: d => `Marquer le jour ${d} comme lu`,
     toast_day: d => `Jour ${d} terminé`, today_reading: "Lecture du jour", read: "Lire",
     plan_teaser: `<strong>Lisez un peu chaque jour.</strong> <span class="muted">Choisissez un plan de lecture et Lamp vous montrera ici les chapitres du jour.</span>`,
@@ -2239,7 +2256,6 @@ const T = {
     timed_mode: "Mode chrono", timed: "Chrono", times_up: `Temps écoulé${NB}!`,
     timed_help: n => `${n} secondes par question. Répondez avant que la lampe s'éteigne${NB}!`,
     daily_title: "Question du jour", daily_done: "Revenez demain pour une nouvelle question.",
-    daily_streak: n => n ? `${n} ${n > 1 ? "jours" : "jour"} de suite` : "Répondez pour commencer une série",
     tile_quiz_daily: "La question du jour vous attend",
     pic_title: "Partager ce verset", pic_preview: "Image du verset", pic_style: "Style de l'image", pic_shape: "Format de l'image",
     pic_square: "Carré", pic_story: "Story", pic_share: "Partager l'image", pic_save: "Enregistrer l'image", pic_text: "Partager le texte",
@@ -2607,9 +2623,10 @@ function renderToday() {
   $("#today-date").textContent = now.toLocaleDateString(lang, { weekday: "long", month: "long", day: "numeric" });
   const v = votdFor(now);
   $("#votd").innerHTML = `<div class="eyebrow" style="margin-bottom:8px">${t("votd")}</div>` + verseCard(v, { lit: true });
-  const active = activePlans(), streakDays = readingStreak();
+  renderStreak();
+  const active = activePlans();
   $("#today-plans").innerHTML = active.length
-    ? `<div class="eyebrow">${t("today_reading")}</div>${streakDays ? `<p class="muted" style="margin:0">${t("streak", streakDays)}</p>` : ""}`
+    ? `<div class="eyebrow">${t("today_reading")}</div>`
       + active.map(p => planCardHTML(p, true)).join("")
     : "";
   // Kids mode puts well-known Bible stories first; finished ones get a green number.
@@ -2862,8 +2879,27 @@ $("#s-bible").addEventListener("change", e => {
   drawBible();
 });
 
+// The streak counts a chapter once its last verse has been on screen (above the tab bar).
+let endWatch = null;
+function watchChapterEnd() {
+  if (endWatch) endWatch.disconnect();
+  const text = [...document.querySelectorAll("#bible-body .chapter-text")].pop();
+  if (!text || !("IntersectionObserver" in window)) return;
+  const end = document.createElement("div");
+  end.style.height = "1px";
+  text.after(end);
+  endWatch = new IntersectionObserver(entries => {
+    if (!entries.some(e => e.isIntersecting)) return;
+    endWatch.disconnect(); endWatch = null;
+    const before = activeToday();
+    markActive();
+    streakMoved(before);
+  }, { rootMargin: "0px 0px -90px 0px" });
+  endWatch.observe(end);
+}
 function afterRead() {
   store("lamp.lastread", { b: rd.b, c: rd.c });
+  watchChapterEnd();
   // Chapters opened, as "book.chapter", for the reading badges.
   const chs = load("lamp.chapters", []), key = rd.b + "." + rd.c;
   if (!chs.includes(key)) store("lamp.chapters", [...chs, key]);
@@ -3088,13 +3124,57 @@ function planState(id) {
   return { p, s, days, cur, finished: cur >= days.length, behind: Math.max(0, scheduled - cur), pct: Math.round(100 * Object.keys(s.done).length / days.length) };
 }
 // Days in a row, ending today or yesterday, on which any plan day was finished.
-function readingStreak() {
-  const dates = new Set(Object.values(plans).flatMap(s => Object.values(s.done)));
-  let d = dayNum(dateKey(new Date()));
-  if (!dates.has(keyOfDay(d))) d--;
-  let n = 0;
-  while (dates.has(keyOfDay(d))) { n++; d--; }
-  return n;
+// ---------- Streak ----------
+// One streak for the whole app. A day counts when you read a chapter to its end, tick off a plan's reading, finish a
+// First steps lesson, finish a quiz round or answer the question of the day. Missing one day in any seven keeps it
+// going (a rest day); missing two in a row, or two within a week, starts it again.
+// lamp.active: { "YYYY-MM-DD": 1 } for chapter ends and quiz rounds. Plan, question and lesson dates already exist,
+// so they count too, and streaks from before this feature carry on.
+function activeDays() {
+  const days = new Set(Object.keys(load("lamp.active", {})));
+  Object.values(plans).forEach(st => Object.values(st.done).forEach(k => days.add(k)));
+  Object.keys(load("lamp.daily", { days: {} }).days).forEach(k => days.add(k));
+  Object.values(load("lamp.start", { done: {} }).done).forEach(ms => days.add(dateKey(new Date(ms))));
+  return days;
+}
+// The streak that ends on day `d` (a day number), counting active days only: { n, rest: the newest rest day used }.
+function streakAt(days, d) {
+  const first = Math.min(...[...days].map(dayNum));
+  let n = 0, rest = null;
+  for (; d >= first; d--) {
+    if (days.has(keyOfDay(d))) n++;
+    else if (rest === null || rest - d >= 7) rest = d;
+    else break;
+  }
+  return { n, rest };
+}
+// Today only counts once it's active; until then the streak runs to yesterday and is still alive.
+function currentStreak(days = activeDays()) {
+  const today = dayNum(todayKey()), done = days.has(keyOfDay(today));
+  return { ...streakAt(days, done ? today : today - 1), done, today };
+}
+function longestStreak(days = activeDays()) {
+  return Math.max(0, ...[...days].map(k => streakAt(days, dayNum(k)).n));
+}
+const activeToday = () => activeDays().has(todayKey());
+function markActive() {
+  const a = load("lamp.active", {}), k = todayKey();
+  if (!a[k]) { a[k] = 1; store("lamp.active", a); }
+}
+// Call with activeToday() from before the change: the first thing done each day gets a little cheer.
+function streakMoved(before, delay = 0) {
+  if (before || !activeToday()) return;
+  renderStreak();
+  const n = currentStreak().n;
+  streakToastUntil = Date.now() + delay + 2600;  // a new badge waits until this has been read
+  setTimeout(() => toast(t("streak_up", n), 2600), delay);
+}
+let streakToastUntil = 0;
+function renderStreak() {
+  const s = currentStreak(), el = $("#streak");
+  el.classList.toggle("lit", s.done);
+  const sub = s.done ? t("streak_done") : !s.n ? t("streak_how") : s.rest === s.today - 1 ? t("streak_rest") : t("streak_keep");
+  el.innerHTML = `<span class="ic" aria-hidden="true">${FLAME}</span><span><b>${s.n ? t("streak_days", s.n) : t("streak_none")}</b><small>${sub}</small></span>`;
 }
 // "Matthew 27–28, Mark 1"
 function readingLabel(chs) {
@@ -3120,10 +3200,9 @@ function planCardHTML(p, compact) {
   </div>`;
 }
 function plansHTML() {
-  const active = activePlans(), others = PLANS.filter(p => !plans[p.id]), n = readingStreak();
+  const active = activePlans(), others = PLANS.filter(p => !plans[p.id]);
   return `<div><button class="btn" data-bv="books">${t("all_books")}</button></div>
     <h2>${t("plans_title")}</h2>
-    ${n ? `<p class="muted" style="margin:0">${t("streak", n)}</p>` : ""}
     ${active.length ? `<div class="eyebrow">${t("your_plans")}</div><div class="planlist">${active.map(p => planCardHTML(p, false)).join("")}</div>` : ""}
     ${others.length ? `<div class="eyebrow">${t("more_plans")}</div><div class="planlist">${others.map(p => `<div class="plancard">
       <h3>${p.name[lang]}</h3>
@@ -3174,10 +3253,11 @@ document.addEventListener("click", e => {
     openChapter(b, c, null, { ...rd.plan, i: rd.plan.i + 1 });
   }
   else if (d.planDone !== undefined) {
-    const { id, day } = rd.plan;
+    const { id, day } = rd.plan, before = activeToday();
     plans[id].done[day] = dateKey(new Date());
     store("lamp.plans", plans);
     toast(planState(id).finished ? t("plan_done_all") : t("toast_day", day + 1));
+    streakMoved(before, 1900);
     renderToday();
     openPlans();
   }
@@ -3205,24 +3285,16 @@ function dailyQuestion() {
   // Rotate the answers by the day so the right one isn't always first.
   return { q, a, note, at: item.at, opts: opts.map((_, i) => opts[(i + d) % opts.length]) };
 }
-function dailyStreak() {
-  const days = load("lamp.daily", { days: {} }).days;
-  let d = dayNum(todayKey());
-  if (!days[keyOfDay(d)]) d--;
-  let n = 0;
-  while (days[keyOfDay(d)]) { n++; d--; }
-  return n;
-}
 const dailyDone = () => !!load("lamp.daily", { days: {} }).days[todayKey()];
 function dailyHTML() {
-  const q = dailyQuestion(), done = load("lamp.daily", { days: {} }).days[todayKey()], n = dailyStreak();
+  const q = dailyQuestion(), done = load("lamp.daily", { days: {} }).days[todayKey()], n = currentStreak().n;
   const opts = q.opts.map((o, i) => {
     const picked = typeof done?.pick === "number" ? i === done.pick : o === done?.pick;
     const cls = !done ? "" : o === q.a ? " right" : picked ? " wrong" : "";
     return `<button class="opt${cls}" data-daily="${i}"${done ? " disabled" : ""}>${esc(o)}</button>`;
   }).join("");
   return `<div class="markcard">
-    <div class="lv-top"><span class="eyebrow">${t("daily_title")}</span><span class="pmeta">${t("daily_streak", n)}</span></div>
+    <div class="lv-top"><span class="eyebrow">${t("daily_title")}</span></div>
     <div class="question">${esc(q.q)}</div>
     <div class="options">${opts}</div>
     ${done ? `<p style="margin:0"><strong style="color:var(${done.ok ? "--good" : "--bad"})">${done.ok ? t("right") : t("wrong")}</strong>
@@ -3281,11 +3353,12 @@ $("#s-quiz").addEventListener("click", e => {
   else if (d.bookNext !== undefined) { if (quiz.i === ROUND - 1) finishQuiz(); else { quiz.i++; renderBookQ(); scrollTo(0, 0); } }
   else if (d.timed) { timed = d.timed === "1"; store("lamp.timed", timed); renderQuizStart(); }
   else if (d.daily) {
-    const q = dailyQuestion(), pick = q.opts[+d.daily], state = load("lamp.daily", { days: {} });
+    const q = dailyQuestion(), pick = q.opts[+d.daily], state = load("lamp.daily", { days: {} }), before = activeToday();
     state.days[todayKey()] = { ok: pick === q.a, pick: +d.daily };  // the answer's position, the same in both languages
     store("lamp.daily", state);
     renderQuizStart();
     renderToday();
+    streakMoved(before);
   }
 });
 // A different Bible fact each day; "Another fact" steps through the rest.
@@ -3385,6 +3458,9 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#leave
 const levelName = l => l === "be" || l === "bh" ? `${t("game_book_short")} · ${t(l === "be" ? "level_e" : "level_h")}` : t("level_" + l);
 function finishQuiz() {
   quiz.over = true;
+  const before = activeToday();
+  markActive();
+  streakMoved(before, 600);
   const s = quiz.score, level = quiz.level, wasTimed = !!quiz.timed, best = bestOf(level, wasTimed), isBest = best === null || s > best;
   const isBook = quiz.kind === "book", name = levelName(level) + (wasTimed ? " · " + t("timed") : "");
   if (isBest) store("lamp.best." + level + (wasTimed ? ".timed" : ""), s);
@@ -3922,22 +3998,17 @@ $("#s-start").addEventListener("click", e => {
   if (o) { startView = +o.dataset.startOpen; renderStart(); scrollTo(0, 0); }
   else if (back) { startView = null; renderStart(); scrollTo(0, 0); }
   else if (d) {
-    const st = load("lamp.start", { done: {} });
+    const st = load("lamp.start", { done: {} }), before = activeToday();
     st.done[d.dataset.startDone] = Date.now();
     store("lamp.start", st);
     toast(t("start_toast"));
+    streakMoved(before, 1900);
     renderStart();
   }
 });
 
 // ---------- Badges ----------
 // Earned from what's already kept on this device; lamp.badges remembers when each was earned: { id: ms }.
-function longestRun(dateKeys) {
-  const days = [...new Set(dateKeys)].map(dayNum).sort((a, b) => a - b);
-  let best = 0, run = 0;
-  days.forEach((d, i) => { run = i && d === days[i - 1] + 1 ? run + 1 : 1; best = Math.max(best, run); });
-  return best;
-}
 function progress() {
   const daily = Object.keys(load("lamp.daily", { days: {} }).days), chs = load("lamp.chapters", []);
   const best = (l, timed = false) => bestOf(l, timed) ?? -1;
@@ -3945,7 +4016,7 @@ function progress() {
   chs.forEach(k => { const b = +k.split(".")[0]; perBook[b] = (perBook[b] || 0) + 1; });
   const startedPlans = load("lamp.plans", {}), prayersNow = load("lamp.prayers", []), mem = load("lamp.memory", []);
   return {
-    daily: daily.length, streak: longestRun(daily), best,
+    daily: daily.length, streak: longestStreak(), best,
     bestAny: Math.max(...["e", "m", "h", "who", "be", "bh"].flatMap(l => [best(l), best(l, true)])),
     bestTimed: Math.max(...["e", "m", "h", "who"].map(l => best(l, true))),
     chapters: chs.length, wholeBook: Object.entries(perBook).some(([b, n]) => CHAPTERS[b] > 1 && n >= CHAPTERS[b]),
@@ -3958,9 +4029,9 @@ function progress() {
 }
 const BADGES = [
   { id: "daily", icon: "quiz", test: p => p.daily >= 1, en: ["First question", "Answer a question of the day"], fr: ["Première question", "Répondre à une question du jour"] },
-  { id: "streak3", icon: "flame", test: p => p.streak >= 3, en: ["Three in a row", "Answer the question of the day 3 days in a row"], fr: ["Trois de suite", "Répondre à la question du jour 3 jours de suite"] },
-  { id: "streak7", icon: "flame", test: p => p.streak >= 7, en: ["Faithful week", "Answer the question of the day 7 days in a row"], fr: ["Semaine fidèle", "Répondre à la question du jour 7 jours de suite"] },
-  { id: "streak30", icon: "flame", test: p => p.streak >= 30, en: ["Faithful month", "Answer the question of the day 30 days in a row"], fr: ["Mois fidèle", "Répondre à la question du jour 30 jours de suite"] },
+  { id: "streak3", icon: "flame", test: p => p.streak >= 3, en: ["Three in a row", "Keep your streak going for 3 days"], fr: ["Trois de suite", "Garder sa série 3 jours"] },
+  { id: "streak7", icon: "flame", test: p => p.streak >= 7, en: ["Faithful week", "Keep your streak going for 7 days"], fr: ["Semaine fidèle", "Garder sa série 7 jours"] },
+  { id: "streak30", icon: "flame", test: p => p.streak >= 30, en: ["Faithful month", "Keep your streak going for 30 days"], fr: ["Mois fidèle", "Garder sa série 30 jours"] },
   { id: "perfect", icon: "quiz", test: p => p.bestAny >= ROUND, en: ["Perfect round", `Score ${ROUND} out of ${ROUND} in any game`], fr: ["Sans faute", `Faire ${ROUND} sur ${ROUND} à n'importe quel jeu`] },
   { id: "scholar", icon: "quiz", test: p => ["e", "m", "h"].every(l => p.best(l) >= 7), en: ["Scholar", "Score 7 or more on Easy, Medium and Hard"], fr: ["Érudit", "Faire 7 ou plus en Facile, Moyen et Difficile"] },
   { id: "quick", icon: "sun", test: p => p.bestTimed >= 7, en: ["Quick thinker", "Score 7 or more in timed mode"], fr: ["Esprit vif", "Faire 7 ou plus en mode chrono"] },
@@ -3985,6 +4056,7 @@ const badgesEarned = () => { const got = load("lamp.badges", {}); return BADGES.
 var badgeTimer;  // var, not let: the app saves data while starting up, before this line has run
 function queueBadges() { clearTimeout(badgeTimer); badgeTimer = setTimeout(checkBadges, 700); }
 function checkBadges() {
+  if (Date.now() < streakToastUntil) { badgeTimer = setTimeout(checkBadges, streakToastUntil - Date.now() + 200); return; }
   const got = load("lamp.badges", {}), p = progress(), fresh = BADGES.filter(b => !got[b.id] && b.test(p));
   if (!fresh.length) return;
   fresh.forEach(b => { got[b.id] = Date.now(); });
