@@ -371,7 +371,6 @@ main.wide { max-width: 980px; }
 .pair .alt { color: var(--muted); border-left: 2px solid var(--blue); padding-left: 10px; font-size: .94em; }
 .chapter-text .pair .alt sup { color: var(--blue); }
 .pair .v:empty { border: 0; padding: 0; }
-.selbar .in strong small { display: block; font-size: .72rem; color: var(--muted); letter-spacing: .04em; }
 .legend { display: flex; gap: 8px 16px; flex-wrap: wrap; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .legend .a { color: var(--gold); }
 .legend .b { color: var(--blue); }
@@ -389,22 +388,41 @@ main.wide { max-width: 980px; }
 .hit b { font-size: .85rem; color: var(--blue); }
 .hit span { font-family: var(--font-read); font-size-adjust: var(--read-adjust, none); font-size: 1.1rem; line-height: 1.4; }
 mark { background: var(--gold-soft); color: inherit; border-radius: 3px; box-shadow: 0 1px 0 var(--gold); }
+/* The verse sheet: tapping a verse slides it up from the bottom, over the tab bar. */
 .selbar {
-  position: fixed; left: 0; right: 0; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 5;
-  display: flex; justify-content: center;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: flex; justify-content: center; pointer-events: none;
 }
 .selbar .in {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 28px rgba(0,0,0,.2);
-  padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; font-size: .88rem; width: min(520px, 100%);
+  pointer-events: auto; width: min(560px, 100%); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .18);
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 14px; animation: sheet-up .22s ease-out;
 }
-.selhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; }
-.selhead strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.swatches { display: flex; gap: 10px; align-items: center; }
-.sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
-.sw[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--surface); }
-.sw.none { background: transparent; border-style: dashed; color: var(--muted); font-size: 1.1rem; line-height: 1; }
-.selacts { display: flex; gap: 6px; flex-wrap: wrap; }
+@keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .selbar .in { animation: none; } }
+.selbar .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line); align-self: center; }
+.selhead { display: flex; align-items: center; gap: 10px; }
+.selhead strong { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; font: 600 1.35rem/1.2 var(--font-verse); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.selhead strong small { font: 700 .72rem var(--font-ui); letter-spacing: .06em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+.selx { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--line); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.selx svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.swatches { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 4px; }
+.sw { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; padding: 0; display: grid; place-items: center; color: var(--ink); }
+.sw[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 3px var(--surface); }
+.sw[aria-pressed="true"]::after { content: "✓"; font-weight: 800; font-size: .95rem; }
+.sw.none { background: transparent; border: 2px dashed var(--line); color: var(--muted); }
+.sw.none svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; }
+.sw.none[aria-pressed="true"]::after { content: none; }
+.sw.none[aria-pressed="true"] { border-style: solid; border-color: var(--muted); box-shadow: none; }
+.selacts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 6px; border-top: 1px solid var(--line); padding-top: 14px; }
+.act { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; background: none; color: var(--ink); padding: 0; min-width: 0; }
+.act .ic { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--bg); color: var(--gold); }
+.act .ic svg { width: 22px; height: 22px; }
+.act.on .ic { background: var(--gold-soft); }
+.act.on .ic svg { fill: currentColor; fill-opacity: .25; }
+.act .lbl { font-size: .74rem; font-weight: 600; line-height: 1.2; text-align: center; max-width: 100%; overflow-wrap: anywhere; }
+.act:active .ic { transform: scale(.94); }
+body:has(#selbar:not([hidden])) main { padding-bottom: calc(380px + env(safe-area-inset-bottom, 0px)); }
 #noteform { display: flex; flex-direction: column; gap: 8px; }
 #noteform textarea { min-height: 84px; font-size: .95rem; }
 
@@ -695,16 +713,26 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
       <svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18"/><path d="M10 8h5M10 12h5"/></svg><span data-t="tab_saved"></span></button>
   </div>
 </nav>
-<div class="selbar" id="selbar" hidden><div class="in">
-  <div class="selhead"><strong id="selref"></strong><button class="btn" type="button" id="selclose" data-t-label="clear_sel">×</button></div>
+<div class="selbar" id="selbar" hidden><div class="in" role="dialog" aria-labelledby="selref">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="selhead"><strong id="selref"></strong><button class="selx" type="button" id="selclose" data-t-label="clear_sel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="swatches" role="group" data-t-label="highlight">
     <button class="sw hl-y" type="button" data-hl="y" data-t-label="hl_y"></button>
     <button class="sw hl-g" type="button" data-hl="g" data-t-label="hl_g"></button>
     <button class="sw hl-b" type="button" data-hl="b" data-t-label="hl_b"></button>
     <button class="sw hl-p" type="button" data-hl="p" data-t-label="hl_p"></button>
-    <button class="sw none" type="button" data-hl="" data-t-label="hl_none">⌀</button>
+    <button class="sw none" type="button" data-hl="" data-t-label="hl_none"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M7 17L17 7"/></svg></button>
   </div>
-  <div class="selacts"><button class="btn" type="button" id="selpray" data-t="pray"></button><button class="btn" type="button" id="selnote"></button><button class="btn" type="button" id="selstudy" data-t="study"></button><button class="btn" type="button" id="selsave"></button><button class="btn" type="button" id="selcopy" data-t="copy"></button><button class="btn" type="button" id="selpic" data-t="share"></button></div>
+  <div class="selacts">
+    <button class="act" type="button" id="selsave"><span class="ic" data-icon="bookmark"></span><span class="lbl"></span></button>
+    <button class="act" type="button" id="selnote"><span class="ic" data-icon="marker"></span><span class="lbl" data-t="act_note"></span></button>
+    <button class="act" type="button" id="selcopy"><span class="ic" data-icon="copy"></span><span class="lbl" data-t="copy"></span></button>
+    <button class="act" type="button" id="selpic"><span class="ic" data-icon="share"></span><span class="lbl" data-t="share"></span></button>
+    <button class="act" type="button" id="selpray"><span class="ic" data-icon="heart"></span><span class="lbl" data-t="pray"></span></button>
+    <button class="act" type="button" id="selstudy"><span class="ic" data-icon="search"></span><span class="lbl" data-t="study"></span></button>
+    <button class="act" type="button" id="selmemo"><span class="ic" data-icon="brain"></span><span class="lbl" data-t="memorize"></span></button>
+    <button class="act" type="button" id="sellisten"><span class="ic" data-icon="speaker"></span><span class="lbl" data-t="listen"></span></button>
+  </div>
   <form id="noteform" hidden>
     <textarea id="notetext" data-t-ph="note_ph" data-t-label="note_ph"></textarea>
     <div class="bar"><button class="btn primary" type="submit" data-t="save_note"></button><button class="btn" type="button" id="notedel" data-t="delete_note"></button></div>
@@ -2006,7 +2034,7 @@ const T = {
     chapters_back: "‹ Chapters", chapters_aria: book => `All chapters of ${book}`,
     smaller: "Smaller text", larger: "Larger text", tap_verse: "Tap a verse to highlight it, add a note, save or copy it.", clear_sel: "Close",
     highlight: "Highlight color", hl_y: "Yellow", hl_g: "Green", hl_b: "Blue", hl_p: "Pink", hl_none: "Remove highlight",
-    add_note: "Add note", edit_note: "Edit note", note_ph: "Write your note…", save_note: "Save note", delete_note: "Delete note",
+    act_note: "Note", add_note: "Add note", edit_note: "Edit note", note_ph: "Write your note…", save_note: "Save note", delete_note: "Delete note",
     toast_note: "Note saved", toast_note_del: "Note deleted", has_note: "Has a note", note_label: "Note",
     tab_verses: n => `Verses (${n})`, tab_marks: n => `Highlights (${n})`, tab_prayers: n => `Prayers (${n})`, remove: "Remove",
     marks_empty: `<strong>No highlights or notes yet.</strong> <span class="muted">In the Bible tab, tap a verse to color it or write a note.</span>`,
@@ -2219,7 +2247,7 @@ const T = {
     chapters_back: "‹ Chapitres", chapters_aria: book => `Tous les chapitres de ${book}`,
     smaller: "Texte plus petit", larger: "Texte plus grand", tap_verse: "Touchez un verset pour le surligner, l'annoter, l'enregistrer ou le copier.", clear_sel: "Fermer",
     highlight: "Couleur de surlignage", hl_y: "Jaune", hl_g: "Vert", hl_b: "Bleu", hl_p: "Rose", hl_none: "Retirer le surlignage",
-    add_note: "Ajouter une note", edit_note: "Modifier la note", note_ph: "Écrivez votre note…", save_note: "Enregistrer la note", delete_note: "Supprimer la note",
+    act_note: "Note", add_note: "Ajouter une note", edit_note: "Modifier la note", note_ph: "Écrivez votre note…", save_note: "Enregistrer la note", delete_note: "Supprimer la note",
     toast_note: "Note enregistrée", toast_note_del: "Note supprimée", has_note: "Contient une note", note_label: "Note",
     tab_verses: n => `Versets (${n})`, tab_marks: n => `Surlignages (${n})`, tab_prayers: n => `Prières (${n})`, remove: "Retirer",
     marks_empty: `<strong>Aucun surlignage ni aucune note.</strong> <span class="muted">Dans l'onglet Bible, touchez un verset pour le colorer ou écrire une note.</span>`,
@@ -2493,7 +2521,7 @@ document.addEventListener("click", e => {
     saved = isSaved(id) ? saved.filter(v => v.id !== id) : [{ id, ver: x.ver, b: x.b, c: x.c, v1: x.v1, v2: x.v2, text: x.text }, ...saved];
     store("lamp.saved", saved);
     document.querySelectorAll(`[data-save="${CSS.escape(id)}"]`).forEach(b => {
-      const on = isSaved(id); b.classList.toggle("on", on); b.textContent = on ? t("saved") : t("save");
+      const on = isSaved(id); b.classList.toggle("on", on); (b.querySelector(".lbl") || b).textContent = on ? t("saved") : t("save");
     });
     toast(isSaved(id) ? t("toast_saved") : t("toast_removed"));
     if (!$("#s-saved").hidden) renderSaved();
@@ -2573,6 +2601,7 @@ function refreshAll() {
   renderLookControls();
   renderScope();
   $("#brand-icon").innerHTML = ICONS.lamp;
+  document.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = ICONS[el.dataset.icon] || ""; });
   $("#gear").innerHTML = ICONS.gear;
   renderToday();
   renderExtras();
@@ -2730,6 +2759,8 @@ const ICONS = {
   medal: `<svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="5.5"/><path d="M8.6 10.6L6 3h4l2 5 2-5h4l-2.6 7.6"/><path d="M12 12.6l.8 1.6 1.7.2-1.3 1.2.4 1.7-1.6-.9-1.6.9.4-1.7-1.3-1.2 1.7-.2z"/></svg>`,
   photo: `<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg>`,
   share: `<svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg>`,
+  copy: `<svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></svg>`,
+  speaker: `<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>`,
   sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>`,
 };
 const FLAME = `<svg viewBox="0 0 24 24"><path d="M12 2c2.6 3.4 5 5.6 5 9.2a5 5 0 0 1-10 0C7 7.6 9.4 5.4 12 2z"/></svg>`;
@@ -2821,7 +2852,7 @@ function openChapter(b, c, v = null, plan = null) {
 }
 
 async function drawBible() {
-  if (listen.on && !listen.turning && (rd.view !== "read" || rd.b !== listen.b || rd.c !== listen.c || ver !== listen.ver)) stopListening();
+  if (listen.on && !listen.turning && (rd.view !== "read" || rd.b !== listen.b || rd.c !== listen.c || (listen.ver !== ver && listen.ver !== cmpVer()))) stopListening();
   const body = $("#bible-body"), trip = quiz && quiz.trip;
   $("#quiz-back").hidden = !trip;
   if (trip) $("#quiz-back button").textContent = t(quiz.kind ? "back_to_game" : "back_to_quiz", quiz.i + 1, ROUND);
@@ -2990,11 +3021,11 @@ function renderPlayer() {
   $("#listen-what").textContent = t("listen_at", chapterName(listen.b, listen.c), listen.i + 1);
   $("#listen-rate").textContent = String(listen.rate).replace(".", lang === "fr" ? "," : ".") + "×";
 }
-async function startListening(i = 0) {
+async function startListening(i = 0, which = ver) {
   if (!TTS) return;
-  if (!pickVoice(VERSIONS[ver].lang)) toast(t("listen_novoice"), 3000);
-  Object.assign(listen, { on: true, b: rd.b, c: rd.c, ver, i });
-  try { await loadBible(ver); } catch { stopListening(); toast(t("load_failed")); return; }
+  if (!pickVoice(VERSIONS[which].lang)) toast(t("listen_novoice"), 3000);
+  Object.assign(listen, { on: true, b: rd.b, c: rd.c, ver: which, i });
+  try { await loadBible(which); } catch { stopListening(); toast(t("load_failed")); return; }
   sayFrom(i);
 }
 function pauseListening() { listen.token++; TTS.cancel(); listen.playing = false; renderPlayer(); }
@@ -3169,13 +3200,20 @@ function selectVerse(el) {
   const x = remember({ ver: which, b: rd.b, c: rd.c, v1: v, v2: v, text: bibles[which][rd.b][rd.c][v] });
   el.classList.add("sel");
   selected = { el, ver: which, b: rd.b, c: rd.c, v, text: x.text, key: markKey(which, rd.b, rd.c, v) };
-  $("#selref").innerHTML = `${formatRef(rd.b, rd.c, v)}<small>${VERSIONS[which].short}</small>`;
+  $("#selref").innerHTML = `<span>${formatRef(rd.b, rd.c, v)}</span><small>${VERSIONS[which].short}</small>`;
+  selected.id = x.id;
   const s = $("#selsave");
-  s.dataset.save = x.id; s.classList.toggle("on", isSaved(x.id)); s.textContent = isSaved(x.id) ? t("saved") : t("save");
+  s.dataset.save = x.id; s.classList.toggle("on", isSaved(x.id)); s.querySelector(".lbl").textContent = isSaved(x.id) ? t("saved") : t("save");
   $("#selcopy").dataset.copy = x.id;
   $("#selpic").dataset.picture = x.id;
+  $("#sellisten").hidden = !TTS;
   refreshSheet();
   $("#selbar").hidden = false;
+  // Keep the chosen verse in sight above the sheet.
+  requestAnimationFrame(() => {
+    const top = $("#selbar .in").getBoundingClientRect().top, r = el.getBoundingClientRect();
+    if (r.bottom > top - 12) scrollBy({ top: r.bottom - top + 24, behavior: "smooth" });
+  });
 }
 function clearSelection() {
   document.querySelectorAll(".v.sel").forEach(x => x.classList.remove("sel"));
@@ -3189,7 +3227,8 @@ $("#selclose").addEventListener("click", clearSelection);
 function refreshSheet() {
   const m = marks[selected.key] || {};
   document.querySelectorAll("#selbar [data-hl]").forEach(b => b.setAttribute("aria-pressed", (m.hl || "") === b.dataset.hl));
-  $("#selnote").textContent = m.note ? t("edit_note") : t("add_note");
+  $("#selnote").classList.toggle("on", !!m.note);
+  $("#selnote").setAttribute("aria-label", m.note ? t("edit_note") : t("add_note"));
   $("#notedel").hidden = !m.note;
 }
 // Repaints one verse in the reader after its color or note changes.
@@ -4494,6 +4533,15 @@ $("#selstudy").addEventListener("click", () => {
   drawBible();
 });
 
+$("#selmemo").addEventListener("click", () => {
+  const s = selected;
+  if (addToMemory({ id: s.id, ver: s.ver, b: s.b, c: s.c, v1: s.v, v2: s.v, text: s.text })) clearSelection();
+});
+$("#sellisten").addEventListener("click", () => {
+  const { v, ver: which } = selected;
+  clearSelection();
+  startListening(v, which);
+});
 $("#selpray").addEventListener("click", () => {
   const s = selected;
   prayAbout({ ver: s.ver, b: s.b, c: s.c, v1: s.v, v2: s.v, text: s.text });
