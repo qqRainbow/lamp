@@ -7,3 +7,4 @@ lamp-test.html
 app/node_modules/
 app/www/
 app/screenshots/*/
+.DS_Store

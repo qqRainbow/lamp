@@ -7,7 +7,7 @@ Apple ID 6828325687 · bundle ID org.ebn.lamp · App Store link https://apps.app
 
 - Category: **Reference** (secondary: **Education**)
 - Content rights: no third-party content needing rights (the four Bibles, cross-references and dictionary are public domain or CC BY)
-- Age rating: answer "None" to everything → **4+**
+- Age rating: Apple calculates it from a questionnaire (tiers 4+, 9+, 13+, 16+, 18+). Content questions: None (or "Infrequent" violence if declaring the Bible's own accounts, which likely gives 9+). Medical/wellness, parental controls, age assurance, unrestricted web access (links open in Safari), messaging, user-generated content, advertising, social media, contests: No. Expected result **4+**.
 - Privacy Policy URL: https://qqrainbow.github.io/lamp/privacy.html
 - App Privacy: **Data Not Collected**
 
