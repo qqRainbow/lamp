@@ -522,6 +522,23 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
 .picsheet .seg { align-self: center; }
 .picsheet .bar { justify-content: center; }
 /* "Leave this round?" prompt */
+#church .qr svg { display: block; width: min(100%, 300px); margin: 0 auto; border-radius: 10px; }
+#church .days { margin: 0; padding-left: 1.3em; font-size: .92rem; }
+#church .plancard { text-align: left; }
+#church-make { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+#church-make p, #church-card p { margin: 0; }
+#cp-own { display: flex; flex-direction: column; gap: 10px; }
+textarea.tall { min-height: 150px; }
+#savedtabs { flex-wrap: wrap; justify-content: center; border-radius: 22px; }
+#savedtabs button { white-space: nowrap; }
+.sermoncard { text-align: left; font: inherit; color: inherit; cursor: pointer; gap: 6px; }
+.sermoncard:hover { border-color: var(--gold); }
+.sermoncard .stitle { font-size: 1.05rem; }
+.sermoncard .snip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.sermon .srow { display: flex; gap: 10px; flex-wrap: wrap; }
+.sermon .srow label { display: flex; flex-direction: column; gap: 6px; flex: 1 1 140px; }
+.sermon .passage { display: flex; flex-direction: column; gap: 6px; }
+.sermon .passage .pverse { margin: 0; }
 .confirm { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 25, .45); }
 .confirm .in {
   width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 10px;
@@ -606,6 +623,24 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
       <details id="home-ios"><summary>iPhone / iPad</summary><ol data-t="home_ios"></ol></details>
       <details id="home-android"><summary>Android</summary><ol data-t="home_android"></ol></details>
       <div class="bar"><span class="applink" id="applink"></span><button class="btn" type="button" id="copylink" data-t="copy_link"></button><button class="btn" type="button" id="tellfriend" data-t="tell_friend"></button></div>
+    </div>
+    <div class="settings" id="church-card">
+      <div class="eyebrow" data-t="church_title"></div>
+      <p class="muted" style="margin:0" data-t="church_paste_help"></p>
+      <div class="bar"><input class="search" id="share-paste" data-t-ph="church_paste_ph" data-t-label="church_paste_ph"><button class="btn" type="button" id="share-open" data-t="open_link"></button></div>
+      <div id="church-make">
+        <div class="eyebrow" data-t="church_make_title"></div>
+        <p class="muted" data-t="church_make_help"></p>
+        <div class="setrow"><label for="cp-plan" data-t="cp_plan"></label><select class="pick" id="cp-plan"></select></div>
+        <div class="setrow"><label for="cp-start" data-t="cp_start"></label><input class="pick" type="date" id="cp-start"></div>
+        <div id="cp-own" hidden>
+          <input class="search" id="cp-name" maxlength="80" data-t-ph="cp_name_ph" data-t-label="cp_name_ph">
+          <textarea id="cp-days" class="tall" data-t-ph="cp_days_ph" data-t-label="cp_days_label"></textarea>
+        </div>
+        <p class="small" id="cp-error" role="alert" style="color:var(--bad)"></p>
+        <div><button class="btn primary" type="button" id="cp-go" data-t="cp_make"></button></div>
+        <p class="muted small" data-t="cp_outline_tip"></p>
+      </div>
     </div>
     <div class="settings">
       <div class="eyebrow" data-t="backup_title"></div>
@@ -756,6 +791,8 @@ body:has(#quiz-back:not([hidden])) .toast { bottom: calc(140px + env(safe-area-i
   <p class="muted" id="leave-text"></p>
   <div class="bar"><button class="btn" type="button" id="leave-go" data-t="leave_go"></button><button class="btn primary" type="button" id="leave-stay" data-t="leave_stay"></button></div>
 </div></div>
+
+<div class="confirm picsheet" id="church" role="dialog" aria-modal="true" aria-labelledby="church-title" hidden><div class="in"></div></div>
 
 <script>
 // ---------- Data ----------
@@ -2162,6 +2199,28 @@ const T = {
     msg_good: "Good effort. Keep reading and try again.", msg_start: "Every expert started somewhere. Try another round.",
     saved_eyebrow: "Journal", saved_title: "Your journal",
     saved_empty: `<strong>No saved verses yet.</strong> <span class="muted">Tap <em>Save</em> on any verse and it will show up here, on this device.</span>`,
+    tab_sermons: n => `Sermons (${n})`, new_sermon: "New sermon note", untitled: "Sermon notes",
+    sermons_empty_title: "Take notes on Sunday",
+    sermons_empty_text: "Write down the passages and what you learn during the service. If your church shares an outline, it opens here ready to fill in.",
+    sermon_title: "Title", sermon_title_ph: "What was the sermon called?", sermon_by: "Preacher", sermon_date: "Date",
+    sermon_passages: "Bible passages", passage_ph: "e.g. John 3:16 or Psalm 23", add: "Add",
+    sermon_points: "Main points", points_ph: "One point per line", sermon_notes: "My notes",
+    notes_ph: "What stood out to you? What will you do about it this week?", done: "Done", share_outline: "Share outline",
+    church_title: "Your church", church_paste_help: "Got a link from your church for a reading plan or a sermon? Paste it here.",
+    church_paste_ph: "Paste the link", open_link: "Open", share_bad: "That doesn't look like a Lamp link from a church.",
+    church_make_title: "Share a reading plan",
+    church_make_help: "For church leaders: make a link and a QR code for a slide or the bulletin, so everyone reads the same chapters on the same days.",
+    cp_plan: "Plan", cp_own: "Our own readings", cp_start: "Start date", cp_name_ph: "Name of the plan, e.g. Advent with Luke",
+    cp_days_ph: "One day per line, for example:\nLuke 1\nLuke 2-3\nPsalm 23, Mark 1", cp_days_label: "Readings, one day per line",
+    cp_make: "Make the link and QR code", cp_bad_line: (n, line) => `Line ${n}: Lamp can't read “${line}”.`, cp_no_days: "Write at least one day of reading.",
+    cp_outline_tip: "To share a sermon outline, open a sermon note in your Journal and tap Share outline.",
+    qr_title_plan: "Reading plan to share", qr_title_talk: "Sermon outline to share",
+    qr_help: "Show the QR code on a slide or print it. Anyone who scans it with their phone's camera opens it in Lamp.",
+    qr_save: "Save QR image", qr_too_long: "This is too long for a QR code. Try fewer days or shorter points.",
+    in_plan: "Reading plan from your church", in_talk: "Sermon outline from your church",
+    in_plan_meta: (date, n) => `Starts ${date} · ${n} ${n === 1 ? "day" : "days"}`,
+    in_join: "Join this plan", in_rejoin: "Start again from this date", in_already: "You already follow this plan. Joining again starts it over from this date.",
+    in_save_talk: "Save to my sermon notes", not_now: "Not now", toast_joined: "Added to your reading plans", plan_starts: d => `Starts ${d}`,
   },
   fr: {
     greet_morning: "Bonjour", greet_afternoon: "Bon après-midi", greet_evening: "Bonsoir",
@@ -2375,6 +2434,28 @@ const T = {
     msg_good: "Bel effort. Continuez à lire et réessayez.", msg_start: "Tout expert a commencé un jour. Faites une autre partie.",
     saved_eyebrow: "Journal", saved_title: "Votre journal",
     saved_empty: `<strong>Aucun verset enregistré.</strong> <span class="muted">Touchez <em>Enregistrer</em> sur un verset pour le retrouver ici, sur cet appareil.</span>`,
+    tab_sermons: n => `Prédications (${n})`, new_sermon: "Nouvelle note de prédication", untitled: "Notes de prédication",
+    sermons_empty_title: "Prenez des notes le dimanche",
+    sermons_empty_text: "Notez les passages et ce que vous apprenez pendant le culte. Si votre Église partage un plan de prédication, il s'ouvre ici, prêt à compléter.",
+    sermon_title: "Titre", sermon_title_ph: "Quel était le titre de la prédication${NB}?", sermon_by: "Prédicateur", sermon_date: "Date",
+    sermon_passages: "Passages bibliques", passage_ph: "ex. Jean 3:16 ou Psaume 23", add: "Ajouter",
+    sermon_points: "Points principaux", points_ph: "Un point par ligne", sermon_notes: "Mes notes",
+    notes_ph: `Qu'est-ce qui vous a marqué${NB}? Qu'allez-vous en faire cette semaine${NB}?`, done: "Terminé", share_outline: "Partager le plan",
+    church_title: "Votre Église", church_paste_help: `Votre Église vous a envoyé un lien vers un plan de lecture ou une prédication${NB}? Collez-le ici.`,
+    church_paste_ph: "Collez le lien", open_link: "Ouvrir", share_bad: "Ce lien ne ressemble pas à un lien Lamp venant d'une Église.",
+    church_make_title: "Partager un plan de lecture",
+    church_make_help: `Pour les responsables d'Église${NB}: créez un lien et un QR code pour une diapositive ou le bulletin, afin que chacun lise les mêmes chapitres les mêmes jours.`,
+    cp_plan: "Plan", cp_own: "Nos propres lectures", cp_start: "Date de début", cp_name_ph: "Nom du plan, ex. L'Avent avec Luc",
+    cp_days_ph: `Un jour par ligne, par exemple${NB}:\nLuc 1\nLuc 2-3\nPsaume 23, Marc 1`, cp_days_label: "Lectures, un jour par ligne",
+    cp_make: "Créer le lien et le QR code", cp_bad_line: (n, line) => `Ligne ${n}${NB}: Lamp ne comprend pas «${NB}${line}${NB}».`, cp_no_days: "Écrivez au moins un jour de lecture.",
+    cp_outline_tip: "Pour partager un plan de prédication, ouvrez une note de prédication dans votre Journal et touchez Partager le plan.",
+    qr_title_plan: "Plan de lecture à partager", qr_title_talk: "Plan de prédication à partager",
+    qr_help: "Affichez le QR code sur une diapositive ou imprimez-le. Toute personne qui le scanne avec l'appareil photo de son téléphone l'ouvre dans Lamp.",
+    qr_save: "Enregistrer le QR code", qr_too_long: "C'est trop long pour un QR code. Essayez moins de jours ou des points plus courts.",
+    in_plan: "Plan de lecture de votre Église", in_talk: "Plan de prédication de votre Église",
+    in_plan_meta: (date, n) => `Commence le ${date} · ${n} ${n === 1 ? "jour" : "jours"}`,
+    in_join: "Suivre ce plan", in_rejoin: "Recommencer à cette date", in_already: "Vous suivez déjà ce plan. Le rejoindre le fait recommencer à partir de cette date.",
+    in_save_talk: "Enregistrer dans mes notes", not_now: "Plus tard", toast_joined: "Ajouté à vos plans de lecture", plan_starts: d => `Commence le ${d}`,
   },
 };
 
@@ -2606,6 +2687,7 @@ function refreshAll() {
   renderToday();
   renderExtras();
   renderFind();
+  renderChurchPicks();
   if (!$("#s-bible").hidden) drawBible();
   if (!$("#s-saved").hidden) renderSaved();
   if (!$("#s-memo").hidden) renderMemo();
@@ -3291,6 +3373,15 @@ const PLANS = [
     desc: { en: "Every chapter, from Genesis to Revelation, in 365 days.", fr: "Tous les chapitres, de la Genèse à l'Apocalypse, en 365 jours." } },
 ];
 const PLAN_BY_ID = Object.fromEntries(PLANS.map(p => [p.id, p]));
+// Plans a church shared with its own readings live in lamp.myplans ({ id: { n: name, d: days } }) and join the list
+// while they're followed.
+const BUILTIN_PLANS = new Set(PLANS.map(p => p.id));
+function addChurchPlan(id, n, d) {
+  const p = { id, days: d.length, books: [], list: d, name: { en: n, fr: n }, desc: { en: "", fr: "" } };
+  PLANS.push(p);
+  PLAN_BY_ID[id] = p;
+}
+Object.entries(load("lamp.myplans", {})).forEach(([id, p]) => addChurchPlan(id, p.n, p.d));
 // A plan's days: its chapters, in order, shared out as evenly as possible.
 function planDays(p) {
   if (p.list) return p.list;
@@ -3378,7 +3469,7 @@ const activePlans = () => PLANS.filter(p => plans[p.id]);
 
 function planCardHTML(p, compact) {
   const st = planState(p.id);
-  const meta = st.finished ? t("finished")
+  const meta = st.finished ? t("finished") : st.s.start > todayKey() ? t("plan_starts", fmtDate(keyMs(st.s.start)))
     : `${t("day_of", st.cur + 1, st.days.length)} · ${st.behind ? t("behind", st.behind) : t("on_track")}`;
   const actions = st.finished
     ? `<button class="btn primary" data-plan-start="${p.id}">${t("start_again")}</button>${compact ? "" : `<button class="btn" data-plan-stop="${p.id}">${t("remove")}</button>`}`
@@ -3436,7 +3527,13 @@ document.addEventListener("click", e => {
   else if (d.planStop) {
     // Stopping loses progress, so it takes a second tap.
     if (!el.dataset.armed) { el.dataset.armed = "1"; el.textContent = t("stop_confirm"); return; }
-    delete plans[d.planStop]; store("lamp.plans", plans); refreshPlans();
+    delete plans[d.planStop]; store("lamp.plans", plans);
+    if (!BUILTIN_PLANS.has(d.planStop)) {
+      const my = load("lamp.myplans", {});
+      delete my[d.planStop]; store("lamp.myplans", my);
+      PLANS.splice(PLANS.indexOf(PLAN_BY_ID[d.planStop]), 1); delete PLAN_BY_ID[d.planStop];
+    }
+    refreshPlans();
   }
   else if (d.planRead) openPlanDay(d.planRead);
   else if (d.goPlans !== undefined) openPlans();
@@ -4301,8 +4398,10 @@ let savedTab = "prayers";
 function renderSaved() {
   const list = Object.entries(marks).sort((a, b) => b[1].at - a[1].at);
   const seg = (k, label) => `<button type="button" data-stab="${k}" aria-pressed="${savedTab === k}">${label}</button>`;
-  $("#savedtabs").innerHTML = seg("prayers", t("tab_prayers", prayers.length)) + seg("verses", t("tab_verses", saved.length)) + seg("marks", t("tab_marks", list.length));
+  $("#savedtabs").innerHTML = seg("prayers", t("tab_prayers", prayers.length)) + seg("verses", t("tab_verses", saved.length)) + seg("marks", t("tab_marks", list.length))
+    + seg("sermons", t("tab_sermons", sermons.length));
   if (savedTab === "prayers") { $("#saved-list").innerHTML = prayersHTML(); return; }
+  if (savedTab === "sermons") { $("#saved-list").innerHTML = sermonsHTML(); fillPassages(); return; }
   if (savedTab === "verses") {
     $("#saved-list").innerHTML = saved.length
       ? saved.map(v => verseCard(v, { small: true, memo: true })).join("")
@@ -4329,6 +4428,112 @@ $("#saved-list").addEventListener("click", e => {
   delete marks[b.dataset.unmark];
   store("lamp.marks", marks);
   renderSaved();
+});
+
+// Sermon notes: { id, date: "YYYY-MM-DD", title, by, refs: [[b, c] or [b, c, v, v2]], points: [text], notes, src? },
+// newest first. src is the church link an outline came from, so opening it twice doesn't make a second note.
+let sermons = load("lamp.sermons", []);
+let sermonOpen = null;  // id of the note being written
+const saveSermons = () => store("lamp.sermons", sermons);
+function openSermon(id) {
+  sermonOpen = id;
+  savedTab = "sermons";
+  show("saved");
+}
+function sermonsHTML() {
+  const s = sermons.find(x => x.id === sermonOpen);
+  if (s) return sermonFormHTML(s);
+  if (!sermons.length) return emptyState("book", t("sermons_empty_title"), t("sermons_empty_text"), `<button class="btn primary" data-sact="new">${t("new_sermon")}</button>`);
+  return `<div><button class="btn primary" data-sact="new">${t("new_sermon")}</button></div>`
+    + sermons.map(x => `<button type="button" class="markcard sermoncard" data-sopen="${x.id}">
+      <span class="pmeta">${esc([fmtDate(keyMs(x.date)), x.by].filter(Boolean).join(" · "))}</span>
+      <strong class="stitle">${esc(x.title || t("untitled"))}</strong>
+      ${x.refs.length ? `<span class="pread">${x.refs.map(refLabel).join(", ")}</span>` : ""}
+      ${x.notes ? `<span class="muted small snip">${esc(x.notes)}</span>` : ""}
+    </button>`).join("");
+}
+function sermonFormHTML(s) {
+  return `<form class="markcard sermon" id="sermonform">
+    <label class="eyebrow" for="sf-title">${t("sermon_title")}</label>
+    <input class="search" id="sf-title" data-sf="title" value="${esc(s.title)}" placeholder="${esc(t("sermon_title_ph"))}">
+    <div class="srow">
+      <label><span class="eyebrow">${t("sermon_by")}</span><input class="search" data-sf="by" value="${esc(s.by)}" placeholder="${esc(t("sermon_by"))}"></label>
+      <label><span class="eyebrow">${t("sermon_date")}</span><input class="pick" type="date" data-sf="date" value="${esc(s.date)}"></label>
+    </div>
+    <div class="eyebrow">${t("sermon_passages")}</div>
+    ${s.refs.map((r, i) => `<div class="passage" data-pass="${i}"><div class="pmeta"><b>${refLabel(r)}</b></div><div class="ptext"></div>
+      <div class="actions"><button type="button" class="btn" data-sact="read" data-i="${i}">${t("read_chapter")}</button><button type="button" class="btn" data-sact="unref" data-i="${i}">${t("remove")}</button></div></div>`).join("")}
+    <div class="bar"><input class="search" id="sf-ref" placeholder="${esc(t("passage_ph"))}" aria-label="${esc(t("sermon_passages"))}"><button type="button" class="btn" data-sact="addref">${t("add")}</button></div>
+    <p class="small" id="sf-referr" style="color:var(--bad)" hidden>${t("verse_not_found")}</p>
+    <label class="eyebrow" for="sf-points">${t("sermon_points")}</label>
+    <textarea id="sf-points" data-sf="points" placeholder="${esc(t("points_ph"))}">${esc(s.points.join("\n"))}</textarea>
+    <label class="eyebrow" for="sf-notes">${t("sermon_notes")}</label>
+    <textarea id="sf-notes" class="tall" data-sf="notes" placeholder="${esc(t("notes_ph"))}">${esc(s.notes)}</textarea>
+    <div class="bar"><button class="btn primary" type="submit">${t("done")}</button>
+      ${NATIVE ? "" : `<button class="btn" type="button" data-sact="share">${t("share_outline")}</button>`}
+      <button class="btn" type="button" data-sact="delete">${t("delete")}</button></div>
+  </form>`;
+}
+// Passage text comes from the Bible being read, so it follows the version picked in Settings.
+async function fillPassages() {
+  const s = sermons.find(x => x.id === sermonOpen);
+  if (!s || !s.refs.length) return;
+  try { await loadBible(ver); } catch { return; }
+  document.querySelectorAll("[data-pass]").forEach(el => {
+    const r = s.refs[+el.dataset.pass], ch = cur()[r[0]]?.[r[1]];
+    if (!ch || r.length === 2) return;
+    const v2 = Math.min(r[3], r[2] + 9, ch.length - 1);
+    el.querySelector(".ptext").innerHTML = `<blockquote class="pverse" lang="${VERSIONS[ver].lang}">${esc(ch.slice(r[2], v2 + 1).filter(Boolean).join(" "))}</blockquote>`;
+  });
+}
+$("#saved-list").addEventListener("input", e => {
+  const f = e.target.dataset.sf, s = sermons.find(x => x.id === sermonOpen);
+  if (!f || !s) return;
+  // Every keystroke is kept, so nothing is lost if the phone locks during the service.
+  s[f] = f === "points" ? e.target.value.split("\n").map(p => p.trim()).filter(Boolean) : f === "date" && !isDay(e.target.value) ? s.date : e.target.value;
+  saveSermons();
+});
+$("#saved-list").addEventListener("submit", e => {
+  if (e.target.id !== "sermonform") return;
+  e.preventDefault();
+  sermonOpen = null;
+  renderSaved();
+});
+$("#saved-list").addEventListener("keydown", e => {
+  if (e.target.id === "sf-ref" && e.key === "Enter") { e.preventDefault(); $('[data-sact="addref"]').click(); }
+});
+$("#saved-list").addEventListener("click", e => {
+  const card = e.target.closest("[data-sopen]");
+  if (card) { openSermon(card.dataset.sopen); return; }
+  const b = e.target.closest("[data-sact]");
+  if (!b) return;
+  const act = b.dataset.sact, s = sermons.find(x => x.id === sermonOpen);
+  if (act === "new") {
+    sermons.unshift({ id: Date.now().toString(36), date: todayKey(), title: "", by: "", refs: [], points: [], notes: "" });
+    saveSermons();
+    openSermon(sermons[0].id);
+    $("#sf-title").focus();
+  }
+  if (!s) return;
+  if (act === "addref") {
+    const p = parseRef($("#sf-ref").value);
+    const ok = p && p.c < CHAPTERS[p.b];
+    if (!ok) { $("#sf-referr").hidden = false; return; }
+    s.refs.push(p.v == null ? [p.b, p.c] : [p.b, p.c, p.v, Math.max(p.v, p.v2 ?? p.v)]);
+    saveSermons();
+    renderSaved();
+    $("#sf-ref").focus();
+  }
+  else if (act === "unref") { s.refs.splice(+b.dataset.i, 1); saveSermons(); renderSaved(); }
+  else if (act === "read") { const r = s.refs[+b.dataset.i]; openChapter(r[0], r[1], r.length === 4 ? r[2] : null); }
+  else if (act === "share") showLink({ k: "talk", t: s.title, by: s.by, d: s.date, r: s.refs, p: s.points }, t("qr_title_talk"));
+  else if (act === "delete") {
+    if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = t("delete_confirm"); return; }
+    sermons = sermons.filter(x => x !== s);
+    saveSermons();
+    sermonOpen = null;
+    renderSaved();
+  }
 });
 
 // Prayers: { id, text, verse: { ver, b, c, v1, v2, text } | null, created, answered, answer }, times in ms.
@@ -4689,6 +4894,316 @@ document.addEventListener("click", e => {
   if (el) addToMemory(known.get(el.dataset.memoAdd));
 });
 
+// ---------- QR codes ----------
+// Byte mode, error correction level M (still reads with 15% of it damaged), the smallest version that fits. Follows
+// ISO/IEC 18004 the way Project Nayuki's QR Code generator does; checked module for module against segno.
+const QR_ECC = [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26, 26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28];
+const QR_BLOCKS = [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49];
+function qrRawModules(v) {
+  let n = (16 * v + 128) * v + 64;
+  if (v >= 2) { const a = Math.floor(v / 7) + 2; n -= (25 * a - 10) * a - 55; if (v >= 7) n -= 36; }
+  return n;
+}
+const qrDataBytes = v => Math.floor(qrRawModules(v) / 8) - QR_ECC[v] * QR_BLOCKS[v];
+function qrMul(x, y) {
+  let z = 0;
+  for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11d); z ^= ((y >>> i) & 1) * x; }
+  return z;
+}
+function qrRS(data, degree) {
+  const gen = Array(degree).fill(0);
+  gen[degree - 1] = 1;
+  for (let i = 0, root = 1; i < degree; i++, root = qrMul(root, 2))
+    for (let j = 0; j < degree; j++) gen[j] = qrMul(gen[j], root) ^ (j + 1 < degree ? gen[j + 1] : 0);
+  const rem = Array(degree).fill(0);
+  for (const b of data) {
+    const f = b ^ rem.shift();
+    rem.push(0);
+    gen.forEach((g, i) => { rem[i] ^= qrMul(g, f); });
+  }
+  return rem;
+}
+// Returns the modules as rows of booleans (true = dark), or null if the text is too long. `mask` is for testing.
+function qrCode(text, mask = -1) {
+  const bytes = [...new TextEncoder().encode(text)];
+  let v = 1;
+  while (v <= 40 && 4 + (v < 10 ? 8 : 16) + 8 * bytes.length > 8 * qrDataBytes(v)) v++;
+  if (v > 40) return null;
+  const cap = qrDataBytes(v), bits = [];
+  const put = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  put(4, 4); put(bytes.length, v < 10 ? 8 : 16); bytes.forEach(b => put(b, 8));
+  put(0, Math.min(4, cap * 8 - bits.length));
+  put(0, (8 - bits.length % 8) % 8);
+  const data = [];
+  for (let i = 0; i < bits.length; i += 8) data.push(bits.slice(i, i + 8).reduce((a, b) => a * 2 + b, 0));
+  for (let pad = 0xec; data.length < cap; pad ^= 0xec ^ 0x11) data.push(pad);
+  // Split into blocks, add each block's error correction, then interleave them.
+  const nb = QR_BLOCKS[v], ecl = QR_ECC[v], raw = Math.floor(qrRawModules(v) / 8), nShort = nb - raw % nb, shortLen = Math.floor(raw / nb);
+  const blocks = [];
+  for (let i = 0, k = 0; i < nb; i++) {
+    const d = data.slice(k, k + shortLen - ecl + (i < nShort ? 0 : 1));
+    k += d.length;
+    const ecc = qrRS(d, ecl);
+    if (i < nShort) d.push(0);
+    blocks.push(d.concat(ecc));
+  }
+  const words = [];
+  for (let i = 0; i < blocks[0].length; i++)
+    blocks.forEach((b, j) => { if (i !== shortLen - ecl || j >= nShort) words.push(b[i]); });
+
+  const size = v * 4 + 17, m = [...Array(size)].map(() => Array(size).fill(false)), fn = m.map(r => r.slice());
+  const set = (x, y, dark) => { m[y][x] = dark; fn[y][x] = true; };
+  for (let i = 0; i < size; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+  for (const [cx, cy] of [[3, 3], [size - 4, 3], [3, size - 4]])
+    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+      const x = cx + dx, y = cy + dy, d = Math.max(Math.abs(dx), Math.abs(dy));
+      if (x >= 0 && x < size && y >= 0 && y < size) set(x, y, d !== 2 && d !== 4);
+    }
+  if (v > 1) {
+    const n = Math.floor(v / 7) + 2, step = v === 32 ? 26 : Math.ceil((v * 4 + 4) / (n * 2 - 2)) * 2, pos = [6];
+    for (let p = size - 7; pos.length < n; p -= step) pos.splice(1, 0, p);
+    pos.forEach((x, i) => pos.forEach((y, j) => {
+      if ((i === 0 && j === 0) || (i === 0 && j === n - 1) || (i === n - 1 && j === 0)) return;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) set(x + dx, y + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+    }));
+  }
+  const format = mk => {
+    let rem = mk;  // level M is 00
+    for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+    const f = ((mk << 10) | rem) ^ 0x5412, bit = i => ((f >>> i) & 1) === 1;
+    for (let i = 0; i <= 5; i++) set(8, i, bit(i));
+    set(8, 7, bit(6)); set(8, 8, bit(7)); set(7, 8, bit(8));
+    for (let i = 9; i < 15; i++) set(14 - i, 8, bit(i));
+    for (let i = 0; i < 8; i++) set(size - 1 - i, 8, bit(i));
+    for (let i = 8; i < 15; i++) set(8, size - 15 + i, bit(i));
+    set(8, size - 8, true);
+  };
+  format(0);
+  if (v >= 7) {
+    let rem = v;
+    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1f25);
+    const f = (v << 12) | rem;
+    for (let i = 0; i < 18; i++) { const a = size - 11 + i % 3, b = Math.floor(i / 3), dark = ((f >>> i) & 1) === 1; set(a, b, dark); set(b, a, dark); }
+  }
+  for (let right = size - 1, i = 0; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+      const x = right - j, y = ((right + 1) & 2) === 0 ? size - 1 - vert : vert;
+      if (!fn[y][x] && i < words.length * 8) { m[y][x] = ((words[i >>> 3] >>> (7 - (i & 7))) & 1) === 1; i++; }
+    }
+  }
+  const MASKS = [(x, y) => (x + y) % 2, (x, y) => y % 2, (x, y) => x % 3, (x, y) => (x + y) % 3,
+    (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2, (x, y) => x * y % 2 + x * y % 3,
+    (x, y) => (x * y % 2 + x * y % 3) % 2, (x, y) => ((x + y) % 2 + x * y % 3) % 2];
+  const apply = k => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!fn[y][x] && MASKS[k](x, y) === 0) m[y][x] = !m[y][x]; };
+  // The standard's penalty score: long runs, 2×2 blocks, finder-like patterns, and too much dark or light.
+  const penalty = () => {
+    let p = 0, dark = 0;
+    const lines = [...m, ...m[0].map((_, x) => m.map(r => r[x]))];
+    for (const l of lines) {
+      const s = l.map(d => (d ? 1 : 0)).join("");
+      for (const run of s.match(/0{5,}|1{5,}/g) || []) p += run.length - 2;
+      p += 40 * ((("0000" + s + "0000").match(/(?=00001011101|10111010000)/g) || []).length);
+    }
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      if (m[y][x]) dark++;
+      if (x && y && m[y][x] === m[y - 1][x] && m[y][x] === m[y][x - 1] && m[y][x] === m[y - 1][x - 1]) p += 3;
+    }
+    return p + 10 * (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1);
+  };
+  if (mask < 0) {
+    let best = Infinity;
+    for (let k = 0; k < 8; k++) {
+      apply(k); format(k);
+      const p = penalty();
+      if (p < best) { best = p; mask = k; }
+      apply(k);  // masking twice undoes it
+    }
+  }
+  apply(mask); format(mask);
+  return m;
+}
+// A QR code as an SVG, dark on white whatever the theme, with the quiet border scanners need.
+function qrSVG(m) {
+  const n = m.length + 8;
+  let d = "";
+  m.forEach((row, y) => row.forEach((dark, x) => { if (dark) d += `M${x + 4} ${y + 4}h1v1h-1z`; }));
+  return `<svg viewBox="0 0 ${n} ${n}" role="img" aria-label="QR code" shape-rendering="crispEdges"><rect width="${n}" height="${n}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+
+// ---------- Church links ----------
+// A church shares a reading plan or a sermon outline as a link to Lamp's website, with a QR code for a slide.
+// Everything travels inside the link (#share=…), so no server is involved:
+//   { k: "plan", id, s }                      one of Lamp's plans, starting on day s ("YYYY-MM-DD")
+//   { k: "plan", n, s, d: [[[b, c], …], …] }  the church's own readings: a name and each day's chapters
+//   { k: "talk", t, by, d, r: [ref, …], p }   a sermon outline: title, preacher, date, passages, main points
+// A ref is [book, chapter] or [book, chapter, verse, lastVerse], all 0-based.
+// The app never shows the website, so making links is for the website only; the app can open a pasted link.
+const SITE_URL = "https://qqrainbow.github.io/lamp/";
+const toB64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const fromB64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)));
+const shareURL = o => (STANDALONE && !NATIVE ? APP_URL : SITE_URL) + "#share=" + toB64(JSON.stringify(o));
+const keyMs = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d).getTime(); };
+const isDay = s => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(keyMs(s));
+const clip = (s, max) => (typeof s === "string" ? s.trim().slice(0, max) : "");
+const okRef = r => Array.isArray(r) && (r.length === 2 || r.length === 4) && r.every(Number.isInteger)
+  && r[0] >= 0 && r[0] < 66 && r[1] >= 0 && r[1] < CHAPTERS[r[0]] && (r.length === 2 || (r[2] >= 0 && r[3] >= r[2] && r[3] < 200));
+const refLabel = r => r.length === 2 ? chapterName(r[0], r[1]) : formatRef(...r);
+// Links come from anywhere, so everything in them is checked before Lamp keeps any of it.
+function readShare(code) {
+  let o = null;
+  try { o = JSON.parse(fromB64(code)); } catch {}
+  if (!o || typeof o !== "object") return null;
+  if (o.k === "plan" && isDay(o.s)) {
+    if (BUILTIN_PLANS.has(o.id)) return { k: "plan", id: o.id, s: o.s };
+    if (Array.isArray(o.d) && o.d.length && o.d.length <= 400
+      && o.d.every(day => Array.isArray(day) && day.length && day.length <= 40 && day.every(r => okRef(r) && r.length === 2)))
+      return { k: "plan", n: clip(o.n, 80) || t("cp_own"), s: o.s, d: o.d };
+  }
+  if (o.k === "talk" && Array.isArray(o.r) && o.r.length <= 30 && o.r.every(okRef) && (o.p == null || Array.isArray(o.p)))
+    return { k: "talk", t: clip(o.t, 120), by: clip(o.by, 80), d: isDay(o.d) ? o.d : todayKey(), r: o.r,
+      p: (o.p || []).slice(0, 30).map(p => clip(p, 300)).filter(Boolean), src: code };
+  return null;
+}
+// "Luke 1" → [[2, 0]], "Luke 2-3, Psalm 23" → [[41, 1], [41, 2], [18, 22]]; null if a part can't be read.
+function parseReadings(line) {
+  const out = [];
+  for (const part of line.split(/[;,]/).map(s => s.trim()).filter(Boolean)) {
+    const m = part.match(/^([1-3]?\s*\p{L}[\p{L} .'’]*?)\.?\s*(\d+)\s*[-–]\s*(\d+)$/u), p = m ? null : parseRef(part);
+    const b = m ? findBook(m[1]) : p ? p.b : -1, from = m ? +m[2] - 1 : p ? p.c : -1, to = m ? +m[3] - 1 : from;
+    if (b < 0 || from < 0 || to < from || to >= CHAPTERS[b]) return null;
+    for (let c = from; c <= to; c++) out.push([b, c]);
+  }
+  return out.length ? out : null;
+}
+
+function openSheet(html) {
+  const el = $("#church");
+  el.querySelector(".in").innerHTML = html;
+  el.hidden = false;
+  el.querySelector("button")?.focus();
+}
+const closeSheet = () => { $("#church").hidden = true; };
+// The sheet that hands over a link: the QR code, the link itself, and ways to pass it on.
+function showLink(o, title) {
+  const url = shareURL(o), qr = qrCode(url);
+  if (!qr) { toast(t("qr_too_long"), 3600); return; }
+  openSheet(`<div class="selhead"><h2 id="church-title">${title}</h2><button class="btn" type="button" data-ch="close" aria-label="${esc(t("close"))}">×</button></div>
+    <div class="qr">${qrSVG(qr)}</div>
+    <p class="muted small">${t("qr_help")}</p>
+    <input class="search" readonly value="${esc(url)}" aria-label="${esc(t("copy_link"))}" data-ch-url>
+    <div class="bar"><button class="btn primary" type="button" data-ch="png">${t("qr_save")}</button><button class="btn" type="button" data-ch="copy">${t("copy_link")}</button>${navigator.share ? `<button class="btn" type="button" data-ch="share">${t("share")}</button>` : ""}</div>`);
+  $("#church").dataset.url = url;
+}
+// What someone sees after opening a church link: what it is, then Join or Save.
+let incoming = null;
+function showIncoming(sh) {
+  incoming = sh;
+  if (sh.k === "plan") {
+    const p = sh.id ? PLAN_BY_ID[sh.id] : null, days = p ? planDays(p) : sh.d, following = sh.id ? !!plans[sh.id] : !!plans[churchPlanId(sh)];
+    openSheet(`<div class="selhead"><h2 id="church-title">${t("in_plan")}</h2><button class="btn" type="button" data-ch="close" aria-label="${esc(t("close"))}">×</button></div>
+      <div class="plancard"><h3>${esc(p ? p.name[lang] : sh.n)}</h3><div class="pmeta">${t("in_plan_meta", fmtDate(keyMs(sh.s)), days.length)}</div>
+      <ol class="days">${days.slice(0, 3).map(d => `<li>${readingLabel(d)}</li>`).join("")}${days.length > 3 ? "<li>…</li>" : ""}</ol></div>
+      ${following ? `<p class="muted small">${t("in_already")}</p>` : ""}
+      <div class="bar"><button class="btn primary" type="button" data-ch="join">${following ? t("in_rejoin") : t("in_join")}</button><button class="btn" type="button" data-ch="close">${t("not_now")}</button></div>`);
+  } else {
+    openSheet(`<div class="selhead"><h2 id="church-title">${t("in_talk")}</h2><button class="btn" type="button" data-ch="close" aria-label="${esc(t("close"))}">×</button></div>
+      <div class="plancard"><h3>${esc(sh.t || t("untitled"))}</h3><div class="pmeta">${esc([sh.by, fmtDate(keyMs(sh.d))].filter(Boolean).join(" · "))}</div>
+      ${sh.r.length ? `<div class="pread">${sh.r.map(refLabel).join(", ")}</div>` : ""}
+      ${sh.p.length ? `<ol class="days">${sh.p.map(p => `<li>${esc(p)}</li>`).join("")}</ol>` : ""}</div>
+      <div class="bar"><button class="btn primary" type="button" data-ch="keep">${t("in_save_talk")}</button><button class="btn" type="button" data-ch="close">${t("not_now")}</button></div>`);
+  }
+}
+// The same church plan gets the same id, so scanning it again doesn't add a second copy.
+function churchPlanId(sh) {
+  let h = 5381;
+  for (const ch of JSON.stringify([sh.n, sh.d])) h = (h * 33 + ch.charCodeAt(0)) >>> 0;
+  return "church-" + h.toString(36);
+}
+function openShared(text) {
+  const m = String(text).match(/#share=([A-Za-z0-9_-]+)/), sh = m && readShare(m[1]);
+  if (!sh) { toast(t("share_bad"), 3200); return; }
+  showIncoming(sh);
+}
+$("#church").addEventListener("click", e => {
+  const b = e.target.closest("[data-ch]");
+  if (e.target === e.currentTarget) { closeSheet(); return; }
+  if (!b) return;
+  const act = b.dataset.ch, url = $("#church").dataset.url;
+  if (act === "close") closeSheet();
+  else if (act === "copy") navigator.clipboard.writeText(url).then(() => toast(t("toast_link")), () => { $("[data-ch-url]").select(); toast(t("toast_selected")); });
+  else if (act === "share") navigator.share({ title: "Lamp", url }).catch(() => {});
+  else if (act === "png") {
+    const qr = qrCode(url), n = qr.length + 8, px = 16, c = document.createElement("canvas"), g = c.getContext("2d");
+    c.width = c.height = n * px;
+    g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = "#000";
+    qr.forEach((row, y) => row.forEach((dark, x) => { if (dark) g.fillRect((x + 4) * px, (y + 4) * px, px, px); }));
+    c.toBlob(blob => saveFile("lamp-qr.png", blob, "image/png"));
+  }
+  else if (act === "join" && incoming) {
+    const sh = incoming, before = activeToday();
+    let id = sh.id;
+    if (!id) {
+      id = churchPlanId(sh);
+      const my = load("lamp.myplans", {});
+      my[id] = { n: sh.n, d: sh.d };
+      store("lamp.myplans", my);
+      if (!PLAN_BY_ID[id]) addChurchPlan(id, sh.n, sh.d);
+    }
+    plans[id] = { start: sh.s, done: {} };
+    store("lamp.plans", plans);
+    closeSheet();
+    toast(t("toast_joined"));
+    streakMoved(before);
+    openPlans();
+    renderToday();
+  }
+  else if (act === "keep" && incoming) {
+    const sh = incoming, had = sermons.find(s => s.src === sh.src);
+    closeSheet();
+    if (!had) {
+      sermons.unshift({ id: Date.now().toString(36), src: sh.src, date: sh.d, title: sh.t, by: sh.by, refs: sh.r, points: sh.p, notes: "" });
+      saveSermons();
+    }
+    openSermon((had || sermons[0]).id);
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#church").hidden) closeSheet(); });
+
+// Settings → Your church
+$("#share-open").addEventListener("click", () => openShared($("#share-paste").value));
+$("#share-paste").addEventListener("keydown", e => { if (e.key === "Enter") $("#share-open").click(); });
+$("#church-make").hidden = NATIVE;
+$("#cp-start").value = todayKey();
+function renderChurchPicks() {
+  $("#cp-plan").innerHTML = PLANS.filter(p => BUILTIN_PLANS.has(p.id)).map(p => `<option value="${p.id}">${p.name[lang]}</option>`).join("")
+    + `<option value="own">${t("cp_own")}</option>`;
+}
+$("#cp-plan").addEventListener("change", () => { $("#cp-own").hidden = $("#cp-plan").value !== "own"; });
+$("#cp-go").addEventListener("click", () => {
+  const id = $("#cp-plan").value, s = $("#cp-start").value, err = $("#cp-error");
+  err.textContent = "";
+  if (!isDay(s)) { $("#cp-start").focus(); return; }
+  if (id !== "own") { showLink({ k: "plan", id, s }, t("qr_title_plan")); return; }
+  const lines = $("#cp-days").value.split("\n").map(l => l.trim()), d = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (!lines[i]) continue;
+    const r = parseReadings(lines[i]);
+    if (!r) { err.textContent = t("cp_bad_line", i + 1, lines[i]); return; }
+    d.push(r);
+  }
+  if (!d.length) { err.textContent = t("cp_no_days"); return; }
+  showLink({ k: "plan", n: clip($("#cp-name").value, 80) || t("cp_own"), s, d }, t("qr_title_plan"));
+});
+// Opening Lamp from a church link (or following one while Lamp is open).
+function checkHash() {
+  if (!location.hash.startsWith("#share=")) return;
+  const h = location.hash;
+  history.replaceState(null, "", location.pathname + location.search);
+  openShared(h);
+}
+addEventListener("hashchange", checkHash);
+
 // ---------- Back up and restore ----------
 // A backup is every "lamp.*" entry this browser stores for Lamp, as JSON: { app: "lamp", version: 1, exported, data: { key: storedText } }.
 function lampData() {
@@ -4938,4 +5453,5 @@ $("#copylink").addEventListener("click", () => {
 });
 
 refreshAll();
+checkHash();
 </script>
