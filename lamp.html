@@ -187,14 +187,20 @@ textarea:focus { outline: none; border-color: var(--gold); }
 /* Shortcut tiles on Today */
 #today-plans:empty, #today-stories:empty { display: none; }
 /* Bible stories (kids mode) */
-.stories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+/* One row that swipes sideways, running to the screen's edges, and opening at the next story to read. */
+.stories {
+  display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+  margin-inline: -16px; padding: 2px 16px 4px; scroll-padding-inline: 16px;
+}
+.stories::-webkit-scrollbar { display: none; }
 .story {
-  display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: start; text-align: left; min-width: 0;
+  flex: 0 0 min(40%, 170px); scroll-snap-align: start;
+  display: grid; grid-template-rows: auto 1fr auto; gap: 6px; align-items: start; text-align: left; min-width: 0;
   background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; color: var(--ink);
 }
 .story:hover { border-color: var(--gold); }
 .story .num {
-  grid-row: span 2; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
   background: var(--gold-soft); color: var(--gold); font-weight: 700; font-size: .85rem; font-variant-numeric: tabular-nums;
 }
 .story.read .num { background: var(--good); color: var(--surface); }
@@ -1923,7 +1929,7 @@ const T = {
     font_classic: "Classic", font_book: "Book", font_modern: "Modern",
     kids_title: "Kids mode", off: "Off", on: "On",
     kids_help: "Bigger text, Bible stories on the Today page, and only the Easy quiz. Tip: the BSB is easier for children to read than the King James.",
-    stories: "Bible stories", story_read: "Read",
+    stories: "Bible stories", story_read: "Read", stories_read: (n, m) => `${n} of ${m} read`,
     study: "Study", back_to: c => `‹ Back to ${c}`, xrefs: "Cross-references", xref_none: "No cross-references for this verse.",
     xref_credit: "Cross-references from OpenBible.info (CC BY).", dictionary: "Bible dictionary",
     dict_none: "No dictionary entries for the words in this verse.",
@@ -2129,7 +2135,7 @@ const T = {
     font_classic: "Classique", font_book: "Livre", font_modern: "Moderne",
     kids_title: "Mode enfants", off: "Non", on: "Oui",
     kids_help: "Texte plus grand, histoires bibliques sur la page Aujourd'hui, et seulement le quiz Facile.",
-    stories: "Histoires bibliques", story_read: "Lu",
+    stories: "Histoires bibliques", story_read: "Lu", stories_read: (n, m) => `${n} sur ${m} lues`,
     study: "Étudier", back_to: c => `‹ Retour à ${c}`, xrefs: "Références croisées", xref_none: "Aucune référence croisée pour ce verset.",
     xref_credit: `Références croisées${NB}: OpenBible.info (CC BY).`, dictionary: "Dictionnaire biblique",
     dict_none: "Aucune entrée du dictionnaire pour les mots de ce verset.",
@@ -2632,10 +2638,13 @@ function renderToday() {
   // Kids mode puts well-known Bible stories first; finished ones get a green number.
   const read = load("lamp.stories", []);
   $("#today-stories").innerHTML = kids
-    ? `<div class="eyebrow">${t("stories")}</div><div class="stories">${STORIES.map((s, i) =>
+    ? `<div class="eyebrow">${t("stories")} · ${t("stories_read", read.length, STORIES.length)}</div><div class="stories">${STORIES.map((s, i) =>
         `<button class="story${read.includes(i) ? " read" : ""}" data-story="${i}"><span class="num">${i + 1}</span><b>${s[lang]}</b>
           <small>${chapterName(s.b, s.c)}${s.v ? ":" + (s.v + 1) : ""}${read.includes(i) ? " · " + t("story_read") : ""}</small></button>`).join("")}</div>`
     : "";
+  // Start the row at the first story not read yet.
+  const nextStory = $(`#today-stories .story:not(.read)`), row = $("#today-stories .stories");
+  if (row) row.scrollLeft = nextStory ? nextStory.offsetLeft - row.firstElementChild.offsetLeft : 0;
   // Shortcuts to the rest of the app, each showing where you are with it.
   const bests = LEVELS.map(l => bestOf(l)).filter(b => b !== null), best = bests.length ? Math.max(...bests) : null;
   const last = load("lamp.lastread", null), open = prayers.filter(p => !p.answered).length;
