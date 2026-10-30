@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- Lamp's roadmap as a picture. Rebuild the PNGs with: bash roadmap/make.sh -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+:root {
+  --bg: #e9edf3; --surface: #f7f8fb; --ink: #1a2034; --muted: #5d6680; --line: #d3d9e4;
+  --gold: #a8741c; --gold-soft: rgba(214, 160, 60, 0.22); --blue: #2c4580;
+  --verse: "Cormorant Garamond", Georgia, serif; --ui: "Figtree", system-ui, sans-serif;
+}
+:root.dark {
+  --bg: #0e1220; --surface: #171c2e; --ink: #e8e9f0; --muted: #9aa1b8; --line: #2a3149;
+  --gold: #e3b45a; --gold-soft: rgba(227, 180, 90, 0.16); --blue: #9fb4ea;
+}
+* { box-sizing: border-box; margin: 0; }
+body { width: 1080px; background: var(--bg); color: var(--ink); font-family: var(--ui); padding: 72px 64px 56px; }
+header { text-align: center; margin-bottom: 44px; }
+header svg { width: 64px; height: 64px; stroke: var(--gold); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+h1 { font-family: var(--verse); font-weight: 600; font-size: 84px; line-height: 1; margin-top: 8px; }
+.sub { color: var(--muted); font-size: 26px; margin-top: 14px; }
+.verse { font-family: var(--verse); font-style: italic; font-size: 30px; color: var(--muted); margin-top: 20px; }
+.verse b { font-style: normal; font-family: var(--ui); font-weight: 600; font-size: 18px; letter-spacing: .08em; color: var(--gold); margin-left: 8px; }
+.legend { display: flex; justify-content: center; gap: 28px; margin-top: 26px; color: var(--muted); font-size: 20px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+
+section { position: relative; padding-left: 56px; margin-top: 40px; }
+section::before { content: ""; position: absolute; left: 15px; top: 40px; bottom: -40px; width: 2px; background: var(--line); }
+section:last-of-type::before { display: none; }
+.dot { position: absolute; left: 0; top: 10px; width: 32px; height: 32px; border-radius: 50%; background: var(--gold-soft); border: 2px solid var(--gold); }
+section.now .dot { background: var(--gold); }
+h2 { font-family: var(--verse); font-weight: 600; font-size: 50px; line-height: 1; display: flex; align-items: baseline; gap: 16px; }
+h2 small { font-family: var(--ui); font-weight: 500; font-size: 22px; color: var(--muted); }
+.cards { display: grid; gap: 16px; margin-top: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 22px 26px; }
+.card.idea { border: 2px dashed var(--gold); }
+.top { display: flex; align-items: center; gap: 12px; }
+.card h3 { font-size: 29px; font-weight: 700; flex: 1; }
+.tag { font-size: 16px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); background: var(--gold-soft); border-radius: 99px; padding: 5px 12px; }
+.card p { font-size: 23px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; font-size: 20px; }
+.meta span { display: inline-flex; align-items: center; gap: 8px; }
+.meta i { font-style: normal; color: var(--muted); }
+.effort { display: inline-flex; gap: 4px; }
+.effort u { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--gold); }
+.effort u.on { background: var(--gold); }
+.wait { color: var(--blue); }
+footer { text-align: center; color: var(--muted); font-size: 18px; margin-top: 56px; }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 24 24"><path d="M12 3c2 3 4 4.5 4 7.5a4 4 0 0 1-8 0C8 8 10 6 12 3z"/><path d="M6 17h12M8 21h8M12 15v2"/></svg>
+  <h1>Lamp roadmap</h1>
+  <p class="sub">What comes next · from 30 October 2026 · about 3 hours a week</p>
+  <p class="verse">“Thy word is a lamp unto my feet, and a light unto my path.”<b>PSALM 119:105</b></p>
+  <div class="legend" id="legend"></div>
+</header>
+<main id="main"></main>
+<footer>Lamp is free, with no accounts, no ads and no tracking · English · Français · Español</footer>
+<script>
+if (location.hash === "#dark") document.documentElement.classList.add("dark");
+const E = { s: 1, m: 2, l: 3 };
+const effort = (n) => `<span class="effort">${[1, 2, 3].map((i) => `<u class="${i <= n ? "on" : ""}"></u>`).join("")}</span>`;
+document.getElementById("legend").innerHTML =
+  `<span>${effort(1)} small</span><span>${effort(2)} medium</span><span>${effort(3)} large</span><span><span class="tag">Idea</span> suggestion</span>`;
+// [name, what it gives the church, effort, who, waits on, suggestion?]
+const ROADMAP = [
+  ["now", "Now", "next 2 weeks", [
+    ["App Store approval", "Lamp on the App Store for everyone at church", "s", "Apple", "Reply sent, waiting"],
+    ["Real iPhone checks", "Sharing pictures, photo backgrounds, the poster's QR code and read-aloud voices, tried for real", "s", "You", ""],
+    ["Spanish read-through", "Spanish that sounds natural to our Spanish speakers, crisis numbers included", "m", "A Spanish speaker, then Claude", ""],
+    ["Pastor reads First steps", "Eight beginner lessons the church can stand behind", "s", "A pastor", ""],
+  ]],
+  ["soon", "Soon", "1–2 months", [
+    ["Church poster update", "The poster says “on the App Store”", "s", "Claude and you", "Apple's approval"],
+    ["Version 1.1", "Spanish and the Sunday tools in the iPhone app", "m", "Claude prepares, you upload", "1.0 approved, Spanish read"],
+    ["Our own address", "A short web address that never changes on posters", "s", "You buy it, Claude switches", ""],
+    ["Church links open the app", "Scanning a plan or sermon QR code opens Lamp straight away", "m", "Claude, you in Xcode", "Own address · version 1.2"],
+    ["Printable plan handout", "A paper reading plan with a QR code, for people without a smartphone", "s", "Claude", "", 1],
+    ["Memory verse of the month", "The church shares one verse by QR code and it lands in everyone's Memorize", "s", "Claude", "", 1],
+  ]],
+  ["later", "Later", "3–6 months", [
+    ["Romanian", "Lamp for Romanian speakers, with the Cornilescu Bible", "l", "Claude, your wife reads it", "Romanian Bible Society's answer"],
+    ["Google Play", "Lamp for Android phones", "m", "Claude and you", "Own address · 12 testers for 14 days"],
+    ["Passages on the big screen", "Turn a sermon outline into slides for the projector", "m", "Claude", "", 1],
+    ["App Store header image", "A nicer App Store page", "s", "Claude", ""],
+  ]],
+  ["someday", "Maybe someday", "no rush", [
+    ["App moves to the church", "The church owns Lamp's App Store account", "s", "A church leader", "The church deciding"],
+    ["Keep listening when locked", "Read-aloud carries on when the screen turns off", "s", "Claude", "Your iPhone check"],
+    ["Psalm numbers in links", "Plan links match between French and English psalm numbers", "s", "Claude", "Someone noticing"],
+  ]],
+];
+document.getElementById("main").innerHTML = ROADMAP.map(([id, name, when, items]) => `
+  <section class="${id}"><span class="dot"></span>
+    <h2>${name}<small>${when}</small></h2>
+    <div class="cards">${items.map(([n, what, e, who, wait, idea]) => `
+      <div class="card${idea ? " idea" : ""}">
+        <div class="top"><h3>${n}</h3>${idea ? `<span class="tag">Idea</span>` : ""}</div>
+        <p>${what}</p>
+        <div class="meta">
+          <span>${effort(E[e])}</span>
+          <span><i>Who</i> ${who}</span>
+          ${wait ? `<span class="wait"><i>Waits on</i> ${wait}</span>` : ""}
+        </div>
+      </div>`).join("")}
+    </div>
+  </section>`).join("");
+// make.sh reads the page height from here to size the screenshot
+document.fonts.ready.then(() => { document.body.dataset.h = document.documentElement.scrollHeight; });
+</script>
+</body>
+</html>
