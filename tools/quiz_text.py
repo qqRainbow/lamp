@@ -7,7 +7,8 @@ html = open(page, encoding="utf-8").read()
 BOOKS = re.findall(r'"([^"]+)"', re.search(r"const BOOKS = \[(.*?)\];", html, re.S)[1])
 BOOKS_FR = json.loads(re.search(r"const BOOKS_FR = (\[.*?\]);", html, re.S)[1])
 LSG_AT = {"Jonah 1:17": (31, 1, 0)}  # Louis Segond numbers this verse Jonas 2:1
-bibles = {k: json.load(open(f"{k}.json", encoding="utf-8")) for k in ("kjv", "bsb", "web", "lsg")}
+RV_AT = {"Jonah 1:17": (31, 1, 0)}   # and so does the Reina-Valera (Jonás 2:1)
+bibles = {k: json.load(open(f"{k}.json", encoding="utf-8")) for k in ("kjv", "bsb", "web", "lsg", "rv")}
 texts = {}
 quiz = html[html.index("const QUIZ = ["):]
 quiz = quiz[:quiz.index("\n];")]  # only the quiz questions, not other lists that also use `at:`
@@ -19,6 +20,9 @@ for ref in sorted(set(re.findall(r'[{,] at: "([^"]+)"', quiz))):
     lb, lc, lv1 = LSG_AT.get(ref, (b, c, v1)); lv2 = lv1 + (v2 - v1)
     e["lsg"] = " ".join(bibles["lsg"][lb][lc][lv1:lv2 + 1])
     e["lsgRef"] = f"{fr_name or BOOKS_FR[lb]} {lc + 1}:{lv1 + 1}" + (f"-{lv2 + 1}" if lv2 != lv1 else "")
+    rb, rc, rv1 = RV_AT.get(ref, (b, c, v1)); rv2 = rv1 + (v2 - v1)
+    e["rv"] = " ".join(x for x in bibles["rv"][rb][rc][rv1:rv2 + 1] if x)
+    if ref in RV_AT: e["rvRef"] = f"{BOOKS[rb]} {rc + 1}:{rv1 + 1}" + (f"-{rv2 + 1}" if rv2 != rv1 else "")  # English names, as parseRef reads them
     texts[ref] = e
 block = "const QUIZ_TEXT = {\n" + ",\n".join(f"  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}" for k, v in texts.items()) + "\n};"
 html, n = re.subn(r"const QUIZ_TEXT = \{\n.*?\n\};", lambda _: block, html, flags=re.S)

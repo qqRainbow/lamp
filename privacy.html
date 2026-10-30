@@ -43,9 +43,10 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line);
 <main>
   <div class="top">
     <span class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="flame" d="M12 2.5c1.5 2 2.6 3.1 2.6 4.7a2.6 2.6 0 0 1-5.2 0c0-1.6 1.1-2.7 2.6-4.7z"/><path d="M3.5 12.5h13.5a3 3 0 0 0 3-3h1.5"/><path d="M4.5 12.5c.4 3 3.6 5 7.5 5s7.1-2 7.5-5"/><path d="M9 21h6M12 17.5V21"/></svg>Lamp</span>
-    <div class="langs" role="group" aria-label="Language / Langue">
+    <div class="langs" role="group" aria-label="Language / Langue / Idioma">
       <button type="button" data-lang="en" aria-pressed="true">English</button>
       <button type="button" data-lang="fr" aria-pressed="false">Français</button>
+      <button type="button" data-lang="es" aria-pressed="false">Español</button>
     </div>
   </div>
 
@@ -127,18 +128,58 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line);
     <!-- /CONTACT -->
   </article>
 
-  <footer>Lamp · Bible companion · English &amp; français</footer>
+  <article lang="es" hidden>
+    <h1>Política de privacidad</h1>
+    <p class="date">Última actualización: 30 de octubre de 2026</p>
+    <p class="lead">Lamp no recopila ningún dato. Todo lo que escribes o guardas en Lamp se queda en tu dispositivo.</p>
+
+    <h2>Qué guarda Lamp, y dónde</h2>
+    <p>Lamp no tiene cuentas ni inicio de sesión. Tus oraciones, notas, subrayados, versículos guardados, planes de lectura, puntuaciones del quiz, insignias y ajustes se guardan solo en tu dispositivo, dentro de la app (o en tu navegador, en el sitio web). Nunca se nos envían a nosotros ni a nadie más, y no tenemos forma de verlos.</p>
+
+    <h2>Lo que Lamp no hace</h2>
+    <ul>
+      <li>Sin publicidad, y sin analíticas ni rastreo de ningún tipo.</li>
+      <li>No se vende ni se comparte ningún dato, porque no se recopila ninguno.</li>
+      <li>La app para iPhone no hace ninguna conexión a internet por su cuenta: las Biblias, el diccionario, las referencias cruzadas y las letras están todas dentro de la app.</li>
+    </ul>
+
+    <h2>Notificaciones diarias</h2>
+    <p>Si activas el recordatorio diario, las notificaciones se programan en tu propio teléfono. No interviene ningún servidor, y puedes desactivarlas cuando quieras en los ajustes de Lamp o de tu teléfono.</p>
+
+    <h2>Fotos</h2>
+    <p>Si eliges una de tus fotos como fondo de una imagen de versículo, Lamp la usa solo en tu dispositivo para dibujar esa imagen. La foto no se sube ni se guarda.</p>
+
+    <h2>Compartir y copias de seguridad</h2>
+    <p>Un versículo, una imagen o un archivo de copia solo sale de tu dispositivo cuando tocas Compartir o Guardar y eliges adónde va (Mensajes, Archivos, Fotos, etc.). Lo que pase después depende de la app o de la persona a quien lo envíes.</p>
+
+    <h2>Borrar tus datos</h2>
+    <p>Borrar la app Lamp (o los datos de tu navegador para el sitio web) borra todo lo que Lamp guardó. En Ajustes → Copia de seguridad puedes guardar antes una copia y restaurarla después en cualquier dispositivo.</p>
+
+    <h2>Niños</h2>
+    <p>Lamp tiene un modo niños y es apta para todas las edades. Como Lamp no recopila información de nadie, tampoco la recopila de los niños.</p>
+
+    <h2>Cambios</h2>
+    <p>Si esta política cambia alguna vez, la nueva versión se publicará en esta página con una fecha nueva.</p>
+
+    <!-- CONTACT -->
+    <h2>¿Preguntas o problemas?</h2>
+    <p>Escribe a <a href="mailto:__CONTACT_EMAIL__">__CONTACT_EMAIL__</a>.</p>
+    <!-- /CONTACT -->
+  </article>
+
+  <footer>Lamp · Bible companion · English, français &amp; español</footer>
 </main>
 <script>
-// French when the address ends in ?lang=fr or the browser prefers French; the buttons switch at any time.
+// French or Spanish when the address ends in ?lang=fr or ?lang=es, or the browser prefers it; the buttons switch at any time.
 function setLang(l) {
   document.documentElement.lang = l;
   document.querySelectorAll("article").forEach(a => a.hidden = a.lang !== l);
   document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === l));
-  document.title = l === "fr" ? "Lamp – Politique de confidentialité" : "Lamp – Privacy policy";
+  document.title = { fr: "Lamp – Politique de confidentialité", es: "Lamp – Política de privacidad", en: "Lamp – Privacy policy" }[l];
 }
 const asked = new URLSearchParams(location.search).get("lang");
-setLang(asked === "fr" || asked === "en" ? asked : /^fr/i.test(navigator.language || "") ? "fr" : "en");
+const LANGS = ["en", "fr", "es"];
+setLang(LANGS.includes(asked) ? asked : LANGS.find(l => (navigator.language || "").toLowerCase().startsWith(l)) || "en");
 document.querySelector(".langs").addEventListener("click", e => { const b = e.target.closest("[data-lang]"); if (b) setLang(b.dataset.lang); });
 </script>
 </body>

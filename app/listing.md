@@ -1,6 +1,6 @@
 # Lamp: Bible — App Store listing
 
-Copy each field into App Store Connect. English is the primary language; French is added under App Information → Localizations.
+Copy each field into App Store Connect. English is the primary language; French and Spanish are added under App Information → Localizations (Spanish from version 1.1: add both Spanish (Mexico) and Spanish (Spain) with the same text).
 Apple ID 6828325687 · bundle ID org.ebn.lamp · App Store link https://apps.apple.com/app/id6828325687
 
 ## App Information (once)
@@ -116,3 +116,58 @@ POUR TOUS
 
 PRIVÉ PAR NATURE
 Tout ce que vous écrivez reste sur votre téléphone. Lamp ne collecte aucune donnée et fonctionne hors ligne. Sauvegardez et restaurez quand vous voulez.
+
+## Español (from version 1.1)
+
+**Nombre** (30): Lamp: Biblia  (if App Store Connect says the name is taken, use Lamp: Bible)
+
+**Subtítulo** (30): Versículos, quiz y oración
+
+**Texto promocional** (170): Un versículo para cómo te sientes, toda la Biblia en español, inglés y francés, quizzes, planes de lectura y un diario de oración. Gratis, sin cuenta ni anuncios.
+
+**Palabras clave** (100): versículo,diario,devocional,oración,quiz,Reina Valera,escritura,plan de lectura,memorizar,salmos
+
+**Descripción** (4000):
+
+Lamp es un compañero bíblico gratuito para cada día, en español, inglés y francés. Sin cuenta, sin anuncios, sin registrarte: ábrelo y lee.
+
+UN VERSÍCULO PARA CÓMO TE SIENTES
+¿Ansioso, agradecido, cansado, solo? Elige cómo te sientes y Lamp encuentra versículos para ese momento. Cada mañana te recibe un nuevo versículo del día.
+
+TODA LA BIBLIA, EN TRES IDIOMAS
+• Cinco Biblias completas: Reina-Valera 1909, King James Version, Berean Standard Bible, World English Bible y Louis Segond 1910
+• Busca cualquier palabra o referencia, y compara dos versiones lado a lado
+• Escucha: Lamp lee los capítulos en voz alta, versículo por versículo
+• Subraya en cuatro colores, añade notas y guarda tus versículos favoritos
+• Referencias cruzadas y el diccionario bíblico de Easton (en inglés) para profundizar
+
+CRECE UN POCO CADA DÍA
+• Planes de lectura: Proverbios en un mes, los Evangelios en 30 días, el Nuevo Testamento en 90 días, la Biblia en un año
+• Una racha diaria: lee un capítulo o termina un quiz para mantenerla (con un día de descanso por semana)
+• 39 insignias para ganar por el camino
+• Memoriza versículos paso a paso
+• Una notificación con el versículo del día y un suave recordatorio por la noche, si los quieres
+
+PARA TU IGLESIA
+• Notas de predicación: los pasajes, los puntos principales y tus propias notas
+• Tu iglesia puede compartir un plan de lectura o el bosquejo del domingo con un código QR
+
+JUEGA Y APRENDE
+• Quiz bíblico de 247 preguntas en tres niveles, modo contrarreloj y una pregunta del día
+• Los juegos «¿Quién lo dijo?» y «¿Qué libro?»
+• Cada respuesta viene con su versículo, así aprendes mientras juegas
+
+ORA
+• Un diario de oración para escribir tus oraciones y marcar las contestadas
+• Convierte cualquier versículo en una oración
+
+COMPARTE
+• Crea una bonita imagen de un versículo con tu propia foto o con uno de los doce fondos, y compártela
+
+PARA TODOS
+• «Primeros pasos»: ocho lecciones cortas para quien es nuevo en la fe
+• Modo niños con letra más grande e historias bíblicas conocidas
+• Temas claro, sepia y oscuro, y tres letras de lectura
+
+PRIVADO POR DISEÑO
+Todo lo que escribes se queda en tu teléfono. Lamp no recopila ningún dato y funciona sin conexión. Haz una copia de seguridad y restáurala cuando quieras.

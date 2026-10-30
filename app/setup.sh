@@ -31,7 +31,7 @@ set_plist() {  # key type value
 set_plist CFBundleDisplayName string "Lamp"
 set_plist CFBundleDevelopmentRegion string "en"
 /usr/libexec/PlistBuddy -c "Delete :CFBundleLocalizations" "$PL" >/dev/null 2>&1 || true
-/usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" -c "Add :CFBundleLocalizations:0 string en" -c "Add :CFBundleLocalizations:1 string fr" "$PL"
+/usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" -c "Add :CFBundleLocalizations:0 string en" -c "Add :CFBundleLocalizations:1 string fr" -c "Add :CFBundleLocalizations:2 string es" "$PL"
 # Picking your own photo for a verse picture, and "Save Image" in the share sheet.
 set_plist NSPhotoLibraryUsageDescription string "Lamp uses a photo you choose as the background of a verse picture. / Lamp utilise la photo choisie comme fond d’une image de verset."
 set_plist NSPhotoLibraryAddUsageDescription string "Lamp saves your verse pictures to Photos. / Lamp enregistre vos images de versets dans Photos."
