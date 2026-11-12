@@ -33,9 +33,10 @@ set_plist CFBundleDevelopmentRegion string "en"
 /usr/libexec/PlistBuddy -c "Delete :CFBundleLocalizations" "$PL" >/dev/null 2>&1 || true
 /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" -c "Add :CFBundleLocalizations:0 string en" -c "Add :CFBundleLocalizations:1 string fr" -c "Add :CFBundleLocalizations:2 string es" "$PL"
 # Picking your own photo for a verse picture, and "Save Image" in the share sheet.
-set_plist NSPhotoLibraryUsageDescription string "Lamp uses a photo you choose as the background of a verse picture. / Lamp utilise la photo choisie comme fond d’une image de verset."
-set_plist NSPhotoLibraryAddUsageDescription string "Lamp saves your verse pictures to Photos. / Lamp enregistre vos images de versets dans Photos."
-set_plist NSCameraUsageDescription string "Take a photo to use as the background of a verse picture. / Prenez une photo comme fond d’une image de verset."
+# Translations live in ios/App/App/{en,fr,es}.lproj/InfoPlist.strings; those folders also make the App Store list the languages.
+set_plist NSPhotoLibraryUsageDescription string "Lamp uses a photo you choose as the background of a verse picture."
+set_plist NSPhotoLibraryAddUsageDescription string "Lamp saves your verse pictures to Photos."
+set_plist NSCameraUsageDescription string "Take a photo to use as the background of a verse picture."
 # Lamp uses no encryption of its own, so App Store Connect doesn't ask about export rules on each upload.
 set_plist ITSAppUsesNonExemptEncryption bool false
 # Portrait only, like the website.

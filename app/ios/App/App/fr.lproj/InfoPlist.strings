@@ -1,0 +1,4 @@
+/* Permission messages iOS shows in French. */
+"NSPhotoLibraryUsageDescription" = "Lamp utilise la photo choisie comme fond d’une image de verset.";
+"NSPhotoLibraryAddUsageDescription" = "Lamp enregistre vos images de versets dans Photos.";
+"NSCameraUsageDescription" = "Prenez une photo comme fond d’une image de verset.";

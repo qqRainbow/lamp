@@ -1,0 +1,4 @@
+/* Permission messages iOS shows in English. */
+"NSPhotoLibraryUsageDescription" = "Lamp uses a photo you choose as the background of a verse picture.";
+"NSPhotoLibraryAddUsageDescription" = "Lamp saves your verse pictures to Photos.";
+"NSCameraUsageDescription" = "Take a photo to use as the background of a verse picture.";
