@@ -1,12 +1,12 @@
 # Lamp: Bible — App Store listing
 
-Copy each field into App Store Connect. English is the primary language; French and Spanish are added under App Information → Localizations (Spanish from version 1.1: add both Spanish (Mexico) and Spanish (Spain) with the same text).
+Copy each field into App Store Connect. English is the primary language; French and Spanish are added under App Information → Localizations (Spanish from version 1.1: add both Spanish (Mexico) and Spanish (Spain) with the same text). Each version also needs its **What's New** text, written at the end of each language below.
 Apple ID 6828325687 · bundle ID org.ebn.lamp · App Store link https://apps.apple.com/app/id6828325687
 
 ## App Information (once)
 
 - Category: **Reference** (secondary: **Education**)
-- Content rights: no third-party content needing rights (the four Bibles, cross-references and dictionary are public domain or CC BY)
+- Content rights: no third-party content needing rights (the five Bibles, cross-references and dictionary are public domain or CC BY)
 - Age rating: Apple calculates it from a questionnaire (tiers 4+, 9+, 13+, 16+, 18+). Content questions: None (or "Infrequent" violence if declaring the Bible's own accounts, which likely gives 9+). Medical/wellness, parental controls, age assurance, unrestricted web access (links open in Safari), messaging, user-generated content, advertising, social media, contests: No. Expected result **4+**.
 - Privacy Policy URL: https://qqrainbow.github.io/lamp/privacy.html
 - App Privacy: **Data Not Collected**
@@ -17,7 +17,7 @@ Apple ID 6828325687 · bundle ID org.ebn.lamp · App Store link https://apps.app
 
 **Subtitle** (30): Verses, quizzes & prayer
 
-**Promotional text** (170): A verse for how you feel, the whole Bible in English and French, quizzes, reading plans and a prayer journal. Free, with no account and no ads.
+**Promotional text** (170): A verse for how you feel, the whole Bible in English, French and Spanish, quizzes, reading plans and a prayer journal. Free, with no account and no ads.
 
 **Keywords** (100, commas, no spaces): verse,daily,devotional,prayer,quiz,KJV,scripture,journal,reading plan,memorize,psalms,gospel
 
@@ -27,13 +27,13 @@ Apple ID 6828325687 · bundle ID org.ebn.lamp · App Store link https://apps.app
 
 **Description** (4000):
 
-Lamp is a free Bible companion for every day, in English and French. No account, no ads, nothing to sign up for: open it and read.
+Lamp is a free Bible companion for every day, in English, French and Spanish. No account, no ads, nothing to sign up for: open it and read.
 
 A VERSE FOR HOW YOU FEEL
 Anxious, grateful, tired, lonely? Pick how you feel and Lamp finds verses for that moment. A new verse of the day greets you each morning.
 
-THE WHOLE BIBLE, IN TWO LANGUAGES
-• Four complete Bibles: King James Version, Berean Standard Bible, World English Bible and Louis Segond 1910
+THE WHOLE BIBLE, IN THREE LANGUAGES
+• Five complete Bibles: King James Version, Berean Standard Bible, World English Bible, Louis Segond 1910 and Reina-Valera 1909
 • Search any word or reference, and compare two versions side by side
 • Listen: Lamp reads chapters aloud, verse by verse
 • Highlight in four colours, add notes, save your favourite verses
@@ -55,6 +55,10 @@ PRAY
 • A prayer journal to write your prayers and mark them answered
 • Turn any verse into a prayer
 
+FOR YOUR CHURCH
+• Sermon notes: write down the passages, the main points and your own thoughts during the service
+• Your church can share a reading plan or a sermon outline as a link: paste it in Settings → Your church
+
 SHARE
 • Make a beautiful verse picture with your own photo or one of twelve backgrounds, and share it with friends
 
@@ -66,25 +70,35 @@ FOR EVERYONE
 PRIVATE BY DESIGN
 Everything you write stays on your phone. Lamp collects no data and works offline. Back up and restore whenever you like.
 
+**What's New in This Version** (4000), for 1.1:
+
+Lamp now speaks Spanish, and brings new tools for Sunday.
+
+• Español: the whole app in Spanish, with the Reina-Valera 1909 Bible
+• Sermon notes: in the Journal, write down the passages, the main points and your own thoughts during the service
+• Reading plans and sermon outlines from your church: it can share them as a link, which you paste in Settings → Your church
+• Requests to use your photos now appear in your phone's language
+• Small fixes and improvements
+
 ## Français
 
 **Nom** (30) : Lamp : Bible
 
 **Sous-titre** (30) : Versets, quiz et prière
 
-**Texte promotionnel** (170) : Un verset selon ce que vous ressentez, toute la Bible en français et en anglais, des quiz, des plans de lecture et un journal de prière. Gratuit, sans compte ni pub.
+**Texte promotionnel** (170) : Un verset selon ce que vous ressentez, la Bible en français, anglais et espagnol, des quiz, des plans de lecture et un journal de prière. Gratuit, sans compte ni pub.
 
 **Mots-clés** (100) : verset,quotidien,prière,quiz,Segond,écriture,journal,plan de lecture,mémoriser,psaumes,évangile
 
 **Description** (4000) :
 
-Lamp est un compagnon biblique gratuit pour chaque jour, en français et en anglais. Pas de compte, pas de publicité, aucune inscription : ouvrez et lisez.
+Lamp est un compagnon biblique gratuit pour chaque jour, en français, anglais et espagnol. Pas de compte, pas de publicité, aucune inscription : ouvrez et lisez.
 
 UN VERSET SELON CE QUE VOUS RESSENTEZ
 Inquiet, reconnaissant, fatigué, seul ? Dites comment vous vous sentez et Lamp trouve des versets pour ce moment. Un nouveau verset du jour vous accueille chaque matin.
 
-TOUTE LA BIBLE, EN DEUX LANGUES
-• Quatre Bibles complètes : Louis Segond 1910, King James Version, Berean Standard Bible et World English Bible
+TOUTE LA BIBLE, EN TROIS LANGUES
+• Cinq Bibles complètes : Louis Segond 1910, King James Version, Berean Standard Bible, World English Bible et Reina-Valera 1909
 • Cherchez un mot ou une référence, et comparez deux versions côte à côte
 • Écoutez : Lamp lit les chapitres à voix haute, verset par verset
 • Surlignez en quatre couleurs, ajoutez des notes, enregistrez vos versets préférés
@@ -106,6 +120,10 @@ PRIER
 • Un journal de prière pour écrire vos prières et noter celles qui sont exaucées
 • Transformez n'importe quel verset en prière
 
+POUR VOTRE ÉGLISE
+• Notes de prédication : notez les passages, les points principaux et vos propres réflexions pendant le culte
+• Votre Église peut partager un plan de lecture ou un plan de prédication par un lien : collez-le dans Réglages → Votre Église
+
 PARTAGER
 • Créez une belle image de verset avec votre propre photo ou l'un des douze fonds, et partagez-la
 
@@ -116,6 +134,16 @@ POUR TOUS
 
 PRIVÉ PAR NATURE
 Tout ce que vous écrivez reste sur votre téléphone. Lamp ne collecte aucune donnée et fonctionne hors ligne. Sauvegardez et restaurez quand vous voulez.
+
+**Nouveautés de cette version** (4000), pour la 1.1 :
+
+Lamp parle maintenant espagnol, et apporte de nouveaux outils pour le dimanche.
+
+• Español : toute l'application en espagnol, avec la Bible Reina-Valera 1909
+• Notes de prédication : dans le Journal, notez les passages, les points principaux et vos propres réflexions pendant le culte
+• Plans de lecture et plans de prédication de votre Église : elle peut les partager par un lien, que vous collez dans Réglages → Votre Église
+• Les demandes d'accès à vos photos s'affichent maintenant dans la langue de votre téléphone
+• Petites corrections et améliorations
 
 ## Español (from version 1.1)
 
@@ -150,7 +178,7 @@ CRECE UN POCO CADA DÍA
 
 PARA TU IGLESIA
 • Notas de predicación: los pasajes, los puntos principales y tus propias notas
-• Tu iglesia puede compartir un plan de lectura o el bosquejo del domingo con un código QR
+• Tu iglesia puede compartir un plan de lectura o el bosquejo del domingo como un enlace: pégalo en Ajustes → Tu iglesia
 
 JUEGA Y APRENDE
 • Quiz bíblico de 247 preguntas en tres niveles, modo contrarreloj y una pregunta del día
@@ -171,3 +199,13 @@ PARA TODOS
 
 PRIVADO POR DISEÑO
 Todo lo que escribes se queda en tu teléfono. Lamp no recopila ningún dato y funciona sin conexión. Haz una copia de seguridad y restáurala cuando quieras.
+
+**Novedades de esta versión** (4000), para la 1.1:
+
+Lamp ahora habla español y trae nuevas herramientas para el domingo.
+
+• Español: toda la aplicación en español, con la Biblia Reina-Valera 1909
+• Notas de predicación: en el Diario, anota los pasajes, los puntos principales y tus propias reflexiones durante el culto
+• Planes de lectura y bosquejos de predicación de tu iglesia: puede compartirlos con un enlace, que pegas en Ajustes → Tu iglesia
+• Los permisos para usar tus fotos aparecen ahora en el idioma de tu teléfono
+• Pequeñas correcciones y mejoras
